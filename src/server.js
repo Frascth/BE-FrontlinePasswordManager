@@ -2,7 +2,8 @@
 import { config } from 'dotenv';
 import hapi from '@hapi/hapi';
 import route from './route.js';
-import initDatabase from './dbConnection.js';
+import { initDatabase } from './dbConnection.js';
+import getAll from './controllers/meowControllers.js';
 
 // load env variables
 config();
@@ -21,9 +22,11 @@ async function init() {
   await server.start();
   console.log(`Server running on ${server.info.uri}`);
 
-  // start db connection
+  // check auth db connection
   await initDatabase();
 }
 
 // init apps
-init();
+await init();
+const res = await getAll();
+console.log(res);
