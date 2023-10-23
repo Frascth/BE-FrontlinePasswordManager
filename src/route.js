@@ -2,7 +2,7 @@ const route = [
   {
     method: 'GET',
     path: '/',
-    handler: () => 'Welcome to Frontline Password Manager',
+    handler: () => 'getAll',
   },
   {
     method: '*',
