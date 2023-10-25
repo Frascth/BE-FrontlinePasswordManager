@@ -1,79 +1,98 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-await-in-loop */
+/* eslint-disable class-methods-use-this */
+/* eslint-disable padded-blocks */
 /* eslint-disable no-console */
-import { DataTypes } from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
 import { nanoid } from 'nanoid';
+import { sequelizeConn } from '../dbConnection.js';
 
-function generateUserPk() {
-  return nanoid(20);
+class T3User extends Model {
+
+  async generatePk() {
+    let newPk = nanoid(21);
+    let isExist = await T3User.findOne({ where: { pk: newPk } });
+    let tryCount = 0;
+
+    while (isExist && tryCount < 10) {
+      newPk = nanoid(21);
+      isExist = await T3User.findOne({ where: { pk: newPk } });
+      tryCount += 1;
+    }
+
+    return newPk;
+  }
 }
 
-function defineT3User(sequelizeConn) {
-  const t3User = sequelizeConn.define('t3User', {
-    pk: {
-      type: DataTypes.STRING(4000),
-      primaryKey: true,
-      autoincrement: false,
+T3User.init({
+  pk: {
+    type: DataTypes.STRING(4000),
+    primaryKey: true,
+    autoIncrement: false,
+  },
+  username: {
+    type: DataTypes.STRING(500),
+    allowNull: false,
+    unique: true,
+    validate: {
+      is: /^[a-zA-Z0-9-]+$/,
     },
-    username: {
-      type: DataTypes.STRING(500),
-      allowNull: false,
-      unique: true,
+  },
+  email: {
+    type: DataTypes.STRING(500),
+    allowNull: false,
+    unique: true,
+    validate: {
+      isEmail: true,
     },
-    email: {
-      type: DataTypes.STRING(500),
-      allowNull: false,
-      unique: true,
-      validate: {
-        isEmail: true,
-      },
-    },
-    hashedPassword: {
-      type: DataTypes.STRING(500),
-      allowNull: false,
-    },
-    salt: {
-      type: DataTypes.STRING(7),
-      allowNull: false,
-    },
-    activationKey: {
-      type: DataTypes.STRING(4000),
-      allowNull: false,
-    },
-    lastLoginTime: {
-      type: DataTypes.DATE,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: sequelizeConn.literal('CURRENT_TIMESTAMP'),
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: sequelizeConn.literal('CURRENT_TIMESTAMP'),
-    },
-    deletedAt: {
-      type: DataTypes.DATE,
-    },
-    createdBy: {
-      type: DataTypes.STRING(4000),
-      allowNull: false,
-    },
-    updatedBy: {
-      type: DataTypes.STRING(4000),
-      allowNull: false,
-    },
-    deletedBy: {
-      type: DataTypes.STRING(4000),
-      allowNull: false,
-    },
-    isDeleted: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-  }, {
-    freezeTableName: true,
-    timestamps: false,
-  });
+  },
+  hashedPassword: {
+    type: DataTypes.STRING(500),
+    allowNull: false,
+  },
+  salt: {
+    type: DataTypes.STRING(500),
+    allowNull: false,
+  },
+  activationKey: {
+    type: DataTypes.STRING(4000),
+    allowNull: false,
+  },
+  twoFacAuth: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  lastLoginTime: {
+    type: DataTypes.DATE,
+  },
+  deletedAt: {
+    type: DataTypes.DATE,
+  },
+  createdBy: {
+    type: DataTypes.STRING(4000),
+    allowNull: false,
+  },
+  updatedBy: {
+    type: DataTypes.STRING(4000),
+    allowNull: false,
+  },
+  deletedBy: {
+    type: DataTypes.STRING(4000),
+  },
+  isDeleted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+}, {
+  sequelize: sequelizeConn,
+  modelName: 'T3User',
+  freezeTableName: true,
+  timestamps: true,
+});
 
-  return t3User;
-}
+T3User.beforeSave(async (t3User) => {
+  const newPk = await t3User.generatePk();
+  t3User.pk = newPk;
+});
 
-export default defineT3User;
+export default T3User;

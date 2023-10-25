@@ -1,8 +1,11 @@
+/* eslint-disable no-console */
+import UserController from './controllers/UserController.js';
+
 const route = [
   {
-    method: 'GET',
-    path: '/',
-    handler: () => 'getAll',
+    method: 'POST',
+    path: '/user',
+    handler: UserController.createUser,
   },
   {
     method: '*',

@@ -9,6 +9,10 @@
         "sourceType": "module"
     },
     "rules": {
-        "import/extensions": [0, "ignorePackages"]
+        "import/extensions": [0, "ignorePackages"],
+        "no-console": "off",
+        "padded-blocks": "off",
+        "class-methods-use-this": "off",
+        "object-curly-newline": "off"
     }
 }

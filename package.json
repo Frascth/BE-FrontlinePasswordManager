@@ -16,6 +16,8 @@
     "@hapi/hapi": "^21.3.2",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.3.1",
+    "lodash": "^4.17.21",
+    "lodash.escape": "^4.0.1",
     "nanoid": "^5.0.2",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
