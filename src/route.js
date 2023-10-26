@@ -11,7 +11,7 @@ const route = [
   {
     method: 'GET',
     path: '/activateAccount/{activationKey}',
-    handler: () => 'Welcome to Frontline Password Manager',
+    handler: HtmlContentController.getAccountActivationContent,
   },
 ];
 

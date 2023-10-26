@@ -26,8 +26,8 @@ async function initDatabase() {
     // create a table from all of sequelize model
     // before the model can sync the controller must be imported first so model.init is executed
     // see/import controller in route.js
-    await sequelizeConn.sync({ alter: true });
-    console.log('Success sync with database');
+    // await sequelizeConn.sync({ alter: true });
+    // console.log('Success sync with database');
   } catch (error) {
     console.error('Unable to connect to the database:', error);
   }

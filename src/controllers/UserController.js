@@ -1,5 +1,7 @@
 /* eslint-disable prefer-const */
+import T1HtmlContent from '../models/T1HtmlContent.js';
 import T3User from '../models/T3User.js';
+import { HTML_CONTENT, SERVER } from '../utils/Constant.js';
 import Util from '../utils/Util.js';
 
 class UserController {
@@ -43,7 +45,15 @@ class UserController {
     }
 
     // send activation link
-    Util.sendMail(email, 'tes', 'tes');
+    let { subject, content } = await T1HtmlContent.findOne({
+      attributes: ['subject', 'content'],
+      where: {
+        pk: HTML_CONTENT.ACCOUNT_ACTIVATION,
+      },
+    });
+    content = content.replace('{{username}}', username);
+    content = content.replace('{{activationLink}}', `http://${SERVER.HOST}:${SERVER.PORT}/activateAccount/${activationKey}`);
+    Util.sendMail(email, subject, content);
 
     return Util.response(h, true, 'Success to create new user', 201, data);
   }

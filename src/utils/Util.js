@@ -8,7 +8,7 @@ import { ENVIRONMENT } from './Constant.js';
 
 class Util {
 
-  static sendMail(to, subject, text) {
+  static sendMail(to, subject, html, text = '') {
     // Create a Nodemailer transporter with your SMTP server details
     const transporter = nodemailer.createTransport({
       service: 'Gmail', // Use the appropriate email service
@@ -29,7 +29,7 @@ class Util {
       to,
       subject,
       text,
-      html: '',
+      html,
       attachment: [],
     };
 

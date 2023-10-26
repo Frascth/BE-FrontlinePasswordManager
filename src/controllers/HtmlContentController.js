@@ -5,8 +5,10 @@ import Util from '../utils/Util.js';
 class HtmlContentController {
 
   static async getAccountActivationContent() {
-    const res = await T1HtmlContent.findAll();
-    return res;
+    const template = await T1HtmlContent.findOne({
+      attributes: ['content'],
+      where: { pk: 1 } });
+    return template;
   }
 
 }
