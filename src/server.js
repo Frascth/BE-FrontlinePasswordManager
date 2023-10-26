@@ -1,17 +1,25 @@
 /* eslint-disable no-console */
-import { config } from 'dotenv';
+// import { config } from 'dotenv';
 import hapi from '@hapi/hapi';
+import { SERVER } from './utils/Constant.js';
 import route from './route.js';
 import { initDatabase } from './dbConnection.js';
 
-// load env variables
-config();
+// // load env variables
+// config();
 
 async function init() {
   // set server config
   const server = hapi.server({
-    host: process.env.SERVER_HOST,
-    port: process.env.SERVER_PORT,
+    host: SERVER.HOST,
+    port: SERVER.PORT,
+    routes: {
+      payload: {
+        parse: true,
+        allow: 'multipart/form-data',
+        multipart: { output: 'stream' },
+      },
+    },
   });
 
   // set server routes

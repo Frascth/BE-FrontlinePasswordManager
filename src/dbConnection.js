@@ -1,16 +1,17 @@
 /* eslint-disable no-console */
-import { config } from 'dotenv';
+// import { config } from 'dotenv';
 import { Sequelize } from 'sequelize';
+import { DB } from './utils/Constant.js';
 
-// load env variable
-config();
+// // load env variable
+// config();
 
 const sequelizeConn = new Sequelize({
-  database: process.env.DB_NAME,
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_URL, // RDS endpoint
-  port: 5432, // PostgreSQL default port
+  database: DB.NAME,
+  username: DB.USERNAME,
+  password: DB.PASSWORD,
+  host: DB.URL, // RDS endpoint
+  port: DB.PORT, // PostgreSQL default port
   dialectOptions: {
     ssl: {
       require: true, // Use SSL

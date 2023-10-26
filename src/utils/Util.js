@@ -3,10 +3,11 @@
 import bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
+import { ENVIRONMENT } from './Constant.js';
 
 class Util {
 
-  static response(h, status = false, message = 'failed', code = 500, data = {}, detailInfo = 'error from catch') {
+  static response(h, status = false, message = 'Failed', code = 500, data = {}, detailInfo = 'Error from catch') {
     let response = h.response({
       status,
       message,
@@ -14,11 +15,11 @@ class Util {
     });
     response.code(code);
 
-    if (status === true) {
+    if (status) {
       detailInfo = message;
     }
 
-    if (process.env.ENVIRONMENT === 'development') {
+    if (ENVIRONMENT === 'development') {
       response = h.response({
         status,
         message: detailInfo,
