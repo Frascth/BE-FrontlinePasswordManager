@@ -1,7 +1,4 @@
 /* eslint-disable prefer-const */
-/* eslint-disable no-console */
-/* eslint-disable padded-blocks */
-/* eslint-disable class-methods-use-this */
 import T3User from '../models/T3User.js';
 import Util from '../utils/Util.js';
 
@@ -27,29 +24,38 @@ class UserController {
     };
 
     try {
-      const newUser = await T3User.create({
-        username,
-        email,
-        hashedPassword,
-        salt,
-        activationKey,
-        twoFacAuth,
-        createdBy: 'self',
-        updatedBy: 'self',
-      });
+      // const newUser = await T3User.create({
+      //   username,
+      //   email,
+      //   hashedPassword,
+      //   salt,
+      //   activationKey,
+      //   twoFacAuth,
+      //   createdBy: 'self',
+      //   updatedBy: 'self',
+      // });
 
-      data.pk = newUser.pk;
-      data.activationKey = newUser.activationKey;
+      // data.pk = newUser.pk;
+      // data.activationKey = newUser.activationKey;
     } catch (error) {
       let response = Util.response(h, false, 'Failed, create new user', 400, data, error);
       return response;
     }
+
+    // send activation link
+    Util.sendMail(email, 'tes', 'tes');
+
     return Util.response(h, true, 'Success to create new user', 201, data);
   }
 
   static async deleteUser() {
     return 'hello';
   }
+
+  // static async activateAccount(request, h) {
+  //   const { activationKey } = request.params;
+  //   return 'res';
+  // }
 
 }
 

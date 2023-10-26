@@ -13,6 +13,8 @@
         "no-console": "off",
         "padded-blocks": "off",
         "class-methods-use-this": "off",
-        "object-curly-newline": "off"
+        "object-curly-newline": "off",
+        "no-param-reassign": "off",
+        "no-await-in-loop": "off"
     }
 }

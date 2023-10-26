@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import UserController from './controllers/UserController.js';
+import HtmlContentController from './controllers/HtmlContentController.js';
 
 const route = [
   {
@@ -8,8 +9,8 @@ const route = [
     handler: UserController.createUser,
   },
   {
-    method: '*',
-    path: '/',
+    method: 'GET',
+    path: '/activateAccount/{activationKey}',
     handler: () => 'Welcome to Frontline Password Manager',
   },
 ];

@@ -3,9 +3,46 @@
 import bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
+import nodemailer from 'nodemailer';
 import { ENVIRONMENT } from './Constant.js';
 
 class Util {
+
+  static sendMail(to, subject, text) {
+    // Create a Nodemailer transporter with your SMTP server details
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail', // Use the appropriate email service
+      host: 'smptp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'frontline.mailer@gmail.com', // Your email address
+        pass: 'ibcquoqfewppfsjx', // Your email password or an app-specific password
+      },
+      // need to disable antivirus example avast to comment this
+      tls: { rejectUnauthorized: false },
+    });
+
+    // Create an email message
+    const mailOptions = {
+      from: 'frontline.mailer@gmail.com',
+      to,
+      subject,
+      text,
+      html: '',
+      attachment: [],
+    };
+
+    // Send the email
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log('Error:', error);
+      } else {
+        console.log('Email sent:', info.response);
+      }
+    });
+
+  }
 
   static response(h, status = false, message = 'Failed', code = 500, data = {}, detailInfo = 'Error from catch') {
     let response = h.response({
@@ -23,6 +60,12 @@ class Util {
       response = h.response({
         status,
         message: detailInfo,
+        data,
+      });
+    } else {
+      response = h.response({
+        status,
+        message: detailInfo.message,
         data,
       });
     }

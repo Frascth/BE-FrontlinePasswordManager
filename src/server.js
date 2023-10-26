@@ -1,12 +1,8 @@
 /* eslint-disable no-console */
-// import { config } from 'dotenv';
 import hapi from '@hapi/hapi';
 import { SERVER } from './utils/Constant.js';
 import route from './route.js';
 import { initDatabase } from './dbConnection.js';
-
-// // load env variables
-// config();
 
 async function init() {
   // set server config

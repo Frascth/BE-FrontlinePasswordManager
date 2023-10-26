@@ -1,10 +1,6 @@
 /* eslint-disable no-console */
-// import { config } from 'dotenv';
 import { Sequelize } from 'sequelize';
 import { DB } from './utils/Constant.js';
-
-// // load env variable
-// config();
 
 const sequelizeConn = new Sequelize({
   database: DB.NAME,
@@ -27,9 +23,11 @@ async function initDatabase() {
     console.log('Database connection has been established successfully.');
 
     // use for development only
-    // create a table from sequelize model
-    // await sequelizeConn.sync({ alter: true });
-    // console.log('Success sync with database');
+    // create a table from all of sequelize model
+    // before the model can sync the controller must be imported first so model.init is executed
+    // see/import controller in route.js
+    await sequelizeConn.sync({ alter: true });
+    console.log('Success sync with database');
   } catch (error) {
     console.error('Unable to connect to the database:', error);
   }

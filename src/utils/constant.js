@@ -3,6 +3,8 @@ import { config } from 'dotenv';
 // load env variables
 config();
 
+// just change this to development or production
+// the rest of constant will adapt
 const ENVIRONMENT = 'development';
 
 const SERVER = {

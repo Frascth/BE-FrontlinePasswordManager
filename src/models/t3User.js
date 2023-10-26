@@ -1,8 +1,3 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable class-methods-use-this */
-/* eslint-disable padded-blocks */
-/* eslint-disable no-console */
 import { DataTypes, Model } from 'sequelize';
 import { nanoid } from 'nanoid';
 import { sequelizeConn } from '../dbConnection.js';
@@ -14,8 +9,8 @@ class T3User extends Model {
     let isExist = await T3User.findOne({ where: { pk: newPk } });
     let tryCount = 0;
 
-    while (isExist && tryCount < 10) {
-      newPk = nanoid(21);
+    while (isExist && tryCount < 3) {
+      newPk = nanoid(24);
       isExist = await T3User.findOne({ where: { pk: newPk } });
       tryCount += 1;
     }
