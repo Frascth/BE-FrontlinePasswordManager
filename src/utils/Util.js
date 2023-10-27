@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
-import { ENVIRONMENT } from './Constant.js';
+import { ENVIRONMENT } from './constant.js';
 
 class Util {
 
@@ -101,7 +101,7 @@ class Util {
   }
 
   static generateActivationKey(username) {
-    return username + nanoid(10);
+    return username + nanoid(30);
   }
 
   static escapeInput(inputString) {

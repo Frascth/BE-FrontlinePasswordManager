@@ -1,8 +1,7 @@
 /* eslint-disable prefer-const */
-import fs from 'fs';
 import T1HtmlContent from '../models/T1HtmlContent.js';
 import T3User from '../models/T3User.js';
-import { HTML_CONTENT, SERVER } from '../utils/Constant.js';
+import { HTML_CONTENT, SERVER } from '../utils/constant.js';
 import Util from '../utils/Util.js';
 
 class UserController {
@@ -27,48 +26,34 @@ class UserController {
     };
 
     try {
-      // const newUser = await T3User.create({
-      //   username,
-      //   email,
-      //   hashedPassword,
-      //   salt,
-      //   activationKey,
-      //   twoFacAuth,
-      //   createdBy: 'self',
-      //   updatedBy: 'self',
-      // });
+      const newUser = await T3User.create({
+        username,
+        email,
+        hashedPassword,
+        salt,
+        activationKey,
+        twoFacAuth,
+        createdBy: 'self',
+        updatedBy: 'self',
+      });
 
-      // data.pk = newUser.pk;
-      // data.activationKey = newUser.activationKey;
+      data.pk = newUser.pk;
+      data.activationKey = newUser.activationKey;
     } catch (error) {
       let response = Util.response(h, false, 'Failed, create new user', 400, data, error);
       return response;
     }
 
     // send activation link
-    // let { subject, content } = await T1HtmlContent.findOne({
-    //   attributes: ['subject', 'content'],
-    //   where: {
-    //     pk: HTML_CONTENT.ACCOUNT_ACTIVATION,
-    //   },
-    // });
+    let { subject, content } = await T1HtmlContent.findOne({
+      attributes: ['subject', 'content'],
+      where: {
+        pk: HTML_CONTENT.ACCOUNT_ACTIVATION,
+      },
+    });
 
-    let content = fs.readFileSync('backups/email_template/account_activation/new-email.html', 'utf-8');
-    let subject = 'tes';
-    content = content.replace('{{username}}', username);
-    content = content.replace('{{activationLink}}', `http://${SERVER.HOST}:${SERVER.PORT}/activateAccount/${activationKey}`);
-
-    // fs.readdir('.', (err, files) => {
-    //   if (err) {
-    //     console.error('Error reading directory:', err);
-    //     return;
-    //   }
-
-    //   console.log('Contents of the current directory:');
-    //   files.forEach((file) => {
-    //     console.log(file);
-    //   });
-    // });
+    content = content.replace(/{{username}}/g, username);
+    content = content.replace(/{{activationLink}}/g, `http://${SERVER.HOST}:${SERVER.PORT}/activateAccount/${activationKey}`);
 
     Util.sendMail(email, subject, content);
 
@@ -79,10 +64,23 @@ class UserController {
     return 'hello';
   }
 
-  // static async activateAccount(request, h) {
-  //   const { activationKey } = request.params;
-  //   return 'res';
-  // }
+  static async activateAccount(request, h) {
+    const { activationKey } = request.params;
+    const user = await T3User.findOne({ where: { activationKey } });
+
+    if (!user) {
+      return Util.response(h, false, 'Failed, user not found', 404);
+    }
+
+    user.activationKey = 'ACTIVE';
+
+    try {
+      await user.save();
+    } catch (error) {
+      return Util.response(h, false, 'Failed, activate account', 500, {}, error);
+    }
+    return Util.response(h, true, 'Success, account activated', 200);
+  }
 
 }
 

@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import UserController from './controllers/UserController.js';
-import HtmlContentController from './controllers/HtmlContentController.js';
 
 const route = [
   {
@@ -11,7 +10,7 @@ const route = [
   {
     method: 'GET',
     path: '/activateAccount/{activationKey}',
-    handler: HtmlContentController.getAccountActivationContent,
+    handler: UserController.activateAccount,
   },
 ];
 

@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { Sequelize } from 'sequelize';
-import { DB } from './utils/Constant.js';
+import { DB } from './utils/constant.js';
 
 const sequelizeConn = new Sequelize({
   database: DB.NAME,
