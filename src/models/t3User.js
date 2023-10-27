@@ -1,6 +1,10 @@
+/* eslint-disable prefer-const */
 import { DataTypes, Model } from 'sequelize';
 import { nanoid } from 'nanoid';
 import { sequelizeConn } from '../dbConnection.js';
+import T1HtmlContent from './T1HtmlContent.js';
+import { HTML_CONTENT, SERVER } from '../utils/constant.js';
+import Util from '../utils/Util.js';
 
 class T3User extends Model {
 
@@ -17,6 +21,27 @@ class T3User extends Model {
 
     return newPk;
   }
+
+  async getActivationLinkEmail() {
+    // send activation link to user email
+    let { subject, content } = await T1HtmlContent.findOne({
+      attributes: ['subject', 'content'],
+      where: {
+        pk: HTML_CONTENT.ACCOUNT_ACTIVATION,
+      },
+    });
+
+    content = content.replace(/{{username}}/g, this.username);
+    content = content.replace(/{{activationLink}}/g, `http://${SERVER.HOST}:${SERVER.PORT}/activate-account/${this.activationKey}`);
+
+    Util.sendMail(this.email, subject, content);
+  }
+
+  async updateActivationLink() {
+    this.activationKey = Util.generateActivationKey(this.username);
+    this.save();
+  }
+
 }
 
 T3User.init({

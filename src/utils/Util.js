@@ -9,6 +9,41 @@ import { ENVIRONMENT } from './constant.js';
 
 class Util {
 
+  static getUTCDateNow() {
+    return new Date(new Date().toISOString());
+  }
+
+  static pgTzToUTCDatetime(pgTz = '2000-12-31T23:59:59.999Z') {
+    return new Date(pgTz);
+  }
+
+  static isDateAboveInterval(date1, date2, interval, format = 'minutes') {
+    date1 = new Date(date1);
+    date2 = new Date(date2);
+    const timeDifferenceInMilliseconds = date1 - date2;
+    let differenceInFormat;
+
+    switch (format) {
+      case 'minute':
+      case 'minutes':
+        differenceInFormat = Math.abs(Math.floor(timeDifferenceInMilliseconds / 60000));
+        break;
+      case 'hour':
+      case 'hours':
+        differenceInFormat = Math.abs(Math.floor(timeDifferenceInMilliseconds / 3600000));
+        break;
+      case 'day':
+      case 'days':
+        differenceInFormat = Math.abs(Math.floor(timeDifferenceInMilliseconds / 86400000));
+        break;
+      default:
+        throw new Error('Invalid time unit. Use "minutes", "hour", or "day".');
+    }
+
+    return (differenceInFormat > interval);
+
+  }
+
   static readDir() {
     fs.readdir('.', (err, files) => {
       if (err) {
@@ -59,28 +94,18 @@ class Util {
 
   }
 
-  static response(h, status = false, message = 'Failed', code = 500, data = {}, detailInfo = 'Error from catch') {
+  static response(h, status = false, message = 'Failed', code = 500, data = {}) {
     let response = h.response({
       status,
-      message,
+      message: message.message || message,
       data,
     });
     response.code(code);
 
-    if (status) {
-      detailInfo = message;
-    }
-
     if (ENVIRONMENT === 'development') {
       response = h.response({
         status,
-        message: detailInfo,
-        data,
-      });
-    } else {
-      response = h.response({
-        status,
-        message: detailInfo.message,
+        message,
         data,
       });
     }

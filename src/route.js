@@ -9,7 +9,7 @@ const route = [
   },
   {
     method: 'GET',
-    path: '/activateAccount/{activationKey}',
+    path: '/activate-account/{activationKey}',
     handler: UserController.activateAccount,
   },
 ];

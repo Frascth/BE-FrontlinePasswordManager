@@ -1,7 +1,5 @@
 /* eslint-disable prefer-const */
-import T1HtmlContent from '../models/T1HtmlContent.js';
 import T3User from '../models/T3User.js';
-import { HTML_CONTENT, SERVER } from '../utils/constant.js';
 import Util from '../utils/Util.js';
 
 class UserController {
@@ -24,9 +22,10 @@ class UserController {
       pk: undefined,
       activationKey: undefined,
     };
+    let newUser;
 
     try {
-      const newUser = await T3User.create({
+      newUser = await T3User.create({
         username,
         email,
         hashedPassword,
@@ -38,24 +37,12 @@ class UserController {
       });
 
       data.pk = newUser.pk;
-      data.activationKey = newUser.activationKey;
     } catch (error) {
-      let response = Util.response(h, false, 'Failed, create new user', 400, data, error);
+      let response = Util.response(h, false, error, 400, data);
       return response;
     }
 
-    // send activation link
-    let { subject, content } = await T1HtmlContent.findOne({
-      attributes: ['subject', 'content'],
-      where: {
-        pk: HTML_CONTENT.ACCOUNT_ACTIVATION,
-      },
-    });
-
-    content = content.replace(/{{username}}/g, username);
-    content = content.replace(/{{activationLink}}/g, `http://${SERVER.HOST}:${SERVER.PORT}/activateAccount/${activationKey}`);
-
-    Util.sendMail(email, subject, content);
+    await newUser.getActivationLinkEmail();
 
     return Util.response(h, true, 'Success to create new user', 201, data);
   }
@@ -72,12 +59,18 @@ class UserController {
       return Util.response(h, false, 'Failed, user not found', 404);
     }
 
+    const isExpired = Util.isDateAboveInterval(user.updatedAt, Util.getUTCDateNow(), 3, 'minute');
+    if (isExpired) {
+      await user.updateActivationLink();
+      await user.getActivationLinkEmail();
+      return Util.response(h, false, 'Failed, activation link has expired, we have sent new activation link to your email', 404);
+    }
     user.activationKey = 'ACTIVE';
 
     try {
       await user.save();
     } catch (error) {
-      return Util.response(h, false, 'Failed, activate account', 500, {}, error);
+      return Util.response(h, false, error, 500);
     }
     return Util.response(h, true, 'Success, account activated', 200);
   }
