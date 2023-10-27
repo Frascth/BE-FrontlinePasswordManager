@@ -23,7 +23,8 @@ const DB = {
 const TWO_FAC_AUTH = {
   NOTHING: 0,
   FACE: 1,
-  TOTP: 2,
+  TOTP_WA: 2,
+  TOTP_GMAIL: 3,
 };
 
 const HTML_CONTENT = {

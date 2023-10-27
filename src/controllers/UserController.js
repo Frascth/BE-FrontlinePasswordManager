@@ -47,30 +47,6 @@ class UserController {
     return Util.response(h, true, 'Success to create new user', 201, data);
   }
 
-  static async activateAccount(request, h) {
-    const { activationKey } = request.params;
-    const user = await T3User.findOne({ where: { activationKey } });
-
-    if (!user) {
-      return Util.response(h, false, 'Failed, user not found', 404);
-    }
-
-    const isExpired = Util.isDateAboveInterval(user.updatedAt, Util.getUTCDateNow(), 3, 'minute');
-    if (isExpired) {
-      await user.updateActivationLink();
-      await user.getActivationLinkEmail();
-      return Util.response(h, false, 'Failed, activation link has expired, we have sent new activation link to your email', 404);
-    }
-    user.activationKey = 'ACTIVE';
-
-    try {
-      await user.save();
-    } catch (error) {
-      return Util.response(h, false, error, 500);
-    }
-    return Util.response(h, true, 'Success, account activated', 200);
-  }
-
 }
 
 export default UserController;

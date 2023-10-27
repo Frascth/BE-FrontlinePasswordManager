@@ -31,16 +31,16 @@ async function init() {
 
   // check auth wa connection
   await waConn.initialize();
-  const isRegistered = await waConn.isRegisteredUser('6285607060067@c.us');
-  console.log('isregistered', isRegistered);
-  if (isRegistered) {
-    try {
-      await waConn.sendMessage('6285607060067@c.us', 'Hello World teees');
-    } catch (err) {
-      console.log(err);
-    }
-    console.log('disini');
-  }
+  // const isRegistered = await waConn.isRegisteredUser('6285607060067@c.us');
+  // console.log('isregistered', isRegistered);
+  // if (isRegistered) {
+  //   try {
+  //     // await waConn.sendMessage('6285607060067@c.us', '11111');
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  //   console.log('disini');
+  // }
 
   // Create a global error handler
   server.ext('onPreResponse', (request, h) => {

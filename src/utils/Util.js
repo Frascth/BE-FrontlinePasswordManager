@@ -14,9 +14,8 @@ class Util {
     to = to.replace(/[^0-9]/g, '');
     to += '@c.us';
     const isRegistered = await waConn.isRegisteredUser(to);
-    console.log('isregistered', isRegistered);
     if (isRegistered) {
-      const res = await waConn.sendMessage(to, message);
+      await waConn.sendMessage(to, message);
     }
 
   }

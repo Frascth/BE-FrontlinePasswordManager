@@ -82,6 +82,10 @@ T3User.init({
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  waNumber: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+  },
   lastLoginTime: {
     type: DataTypes.DATE,
   },
