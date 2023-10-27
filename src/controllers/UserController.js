@@ -1,4 +1,5 @@
 /* eslint-disable prefer-const */
+import fs from 'fs';
 import T1HtmlContent from '../models/T1HtmlContent.js';
 import T3User from '../models/T3User.js';
 import { HTML_CONTENT, SERVER } from '../utils/Constant.js';
@@ -45,14 +46,30 @@ class UserController {
     }
 
     // send activation link
-    let { subject, content } = await T1HtmlContent.findOne({
-      attributes: ['subject', 'content'],
-      where: {
-        pk: HTML_CONTENT.ACCOUNT_ACTIVATION,
-      },
-    });
+    // let { subject, content } = await T1HtmlContent.findOne({
+    //   attributes: ['subject', 'content'],
+    //   where: {
+    //     pk: HTML_CONTENT.ACCOUNT_ACTIVATION,
+    //   },
+    // });
+
+    let content = fs.readFileSync('backups/email_template/account_activation/new-email.html', 'utf-8');
+    let subject = 'tes';
     content = content.replace('{{username}}', username);
     content = content.replace('{{activationLink}}', `http://${SERVER.HOST}:${SERVER.PORT}/activateAccount/${activationKey}`);
+
+    // fs.readdir('.', (err, files) => {
+    //   if (err) {
+    //     console.error('Error reading directory:', err);
+    //     return;
+    //   }
+
+    //   console.log('Contents of the current directory:');
+    //   files.forEach((file) => {
+    //     console.log(file);
+    //   });
+    // });
+
     Util.sendMail(email, subject, content);
 
     return Util.response(h, true, 'Success to create new user', 201, data);

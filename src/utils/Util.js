@@ -4,9 +4,24 @@ import bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
+import fs from 'fs';
 import { ENVIRONMENT } from './Constant.js';
 
 class Util {
+
+  static readDir() {
+    fs.readdir('.', (err, files) => {
+      if (err) {
+        console.error('Error reading directory:', err);
+        return;
+      }
+
+      console.log('Contents of the current directory:');
+      files.forEach((file) => {
+        console.log(file);
+      });
+    });
+  }
 
   static sendMail(to, subject, html, text = '') {
     // Create a Nodemailer transporter with your SMTP server details
