@@ -5,9 +5,21 @@ import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
+import waConn from '../waConnection.js';
 import { ENVIRONMENT } from './constant.js';
 
 class Util {
+
+  static async sendWhatsApp(to, message) {
+    to = to.replace(/[^0-9]/g, '');
+    to += '@c.us';
+    const isRegistered = await waConn.isRegisteredUser(to);
+    console.log('isregistered', isRegistered);
+    if (isRegistered) {
+      const res = await waConn.sendMessage(to, message);
+    }
+
+  }
 
   static getUTCDateNow() {
     return new Date(new Date().toISOString());

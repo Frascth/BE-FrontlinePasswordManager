@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
 import hapi from '@hapi/hapi';
-import { SERVER } from './utils/Constant.js';
+import { SERVER } from './utils/constant.js';
 import route from './route.js';
 import { initDatabase } from './dbConnection.js';
+import waConn from './waConnection.js';
 
 async function init() {
   // set server config
@@ -27,6 +28,19 @@ async function init() {
 
   // check auth db connection
   await initDatabase();
+
+  // check auth wa connection
+  await waConn.initialize();
+  const isRegistered = await waConn.isRegisteredUser('6285607060067@c.us');
+  console.log('isregistered', isRegistered);
+  if (isRegistered) {
+    try {
+      await waConn.sendMessage('6285607060067@c.us', 'Hello World teees');
+    } catch (err) {
+      console.log(err);
+    }
+    console.log('disini');
+  }
 
   // Create a global error handler
   server.ext('onPreResponse', (request, h) => {

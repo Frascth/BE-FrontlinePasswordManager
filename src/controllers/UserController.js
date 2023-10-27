@@ -47,10 +47,6 @@ class UserController {
     return Util.response(h, true, 'Success to create new user', 201, data);
   }
 
-  static async deleteUser() {
-    return 'hello';
-  }
-
   static async activateAccount(request, h) {
     const { activationKey } = request.params;
     const user = await T3User.findOne({ where: { activationKey } });

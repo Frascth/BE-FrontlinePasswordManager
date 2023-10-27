@@ -22,7 +22,9 @@
     "nodemailer": "^6.9.7",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.33.0"
+    "qrcode-terminal": "^0.12.0",
+    "sequelize": "^6.33.0",
+    "whatsapp-web.js": "^1.23.0"
   },
   "devDependencies": {
     "eslint": "^8.52.0",
