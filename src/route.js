@@ -17,6 +17,16 @@ const prodRoute = [
     path: '/activate-account/{activationKey}',
     handler: AuthController.activateAccount,
   },
+  {
+    method: 'POST',
+    path: '/send-otp',
+    handler: AuthController.sendOtp,
+  },
+  {
+    method: 'PUT',
+    path: '/confirm-otp',
+    handler: AuthController.confirmOtp,
+  },
 ];
 
 route = prodRoute;
@@ -26,13 +36,14 @@ if (ENVIRONMENT === 'development') {
   const devRoute = [
     {
       method: 'POST',
-      path: '/test-otp/wa',
-      handler: AuthController.sendOtpWa,
+      path: '/send-message/wa',
+      handler: AuthController.sendMessageWa,
     },
+
     {
       method: 'POST',
-      path: '/test-otp/email',
-      handler: AuthController.sendOtpEmail,
+      path: '/send-message/email',
+      handler: AuthController.sendMessageEmail,
     },
   ];
 
