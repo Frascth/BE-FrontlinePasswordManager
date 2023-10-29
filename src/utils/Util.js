@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-shadow */
+import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
@@ -9,6 +10,26 @@ import waConn from '../waConnection.js';
 import { ENVIRONMENT } from './constant.js';
 
 class Util {
+
+  static isEmail(inputString) {
+    // Regular expression pattern for a simple email validation
+    const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    // Test the email against the pattern and return true if it's a valid email
+    return emailPattern.test(inputString);
+  }
+
+  /**
+   * generate cryptographically secure random number
+   * @param {Number} length default is 6 digits
+   * @returns string of random number
+   */
+  static generateRandomNumber(length = 6) {
+    const randomNumber = [];
+    for (let i = 0; i < length; i += 1) {
+      randomNumber.push(crypto.randomInt(0, 10));
+    }
+    return randomNumber.join('');
+  }
 
   static async sendWhatsApp(to, message) {
     to = to.replace(/[^0-9]/g, '');
@@ -28,10 +49,10 @@ class Util {
     return new Date(pgTz);
   }
 
-  static isDateAboveInterval(date1, date2, interval, format = 'minutes') {
-    date1 = new Date(date1);
-    date2 = new Date(date2);
-    const timeDifferenceInMilliseconds = date1 - date2;
+  static isDateAboveInterval(datetime1, datetime2, interval, format = 'minutes') {
+    datetime1 = new Date(datetime1);
+    datetime2 = new Date(datetime2);
+    const timeDifferenceInMilliseconds = datetime1 - datetime2;
     let differenceInFormat;
 
     switch (format) {
@@ -119,6 +140,8 @@ class Util {
         message,
         data,
       });
+      response.code(code);
+
     }
 
     return response;
