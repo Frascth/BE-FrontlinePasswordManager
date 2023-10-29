@@ -7,6 +7,8 @@ config();
 // the rest of constant will adapt
 const ENVIRONMENT = 'development';
 
+const { ADMIN_WA_NO } = process.env;
+
 const SERVER = {
   HOST: ENVIRONMENT === 'development' ? process.env.DEV_SERVER_HOST : process.env.PROD_SERVER_HOST,
   PORT: ENVIRONMENT === 'development' ? process.env.DEV_SERVER_PORT : process.env.PROD_SERVER_PORT,
@@ -31,4 +33,4 @@ const HTML_CONTENT = {
   ACCOUNT_ACTIVATION: 1,
 };
 
-export { ENVIRONMENT, SERVER, DB, TWO_FAC_AUTH, HTML_CONTENT };
+export { ENVIRONMENT, SERVER, DB, TWO_FAC_AUTH, HTML_CONTENT, ADMIN_WA_NO };

@@ -1,6 +1,7 @@
 // import { Client, LocalAuth } from 'whatsapp-web.js';
 import qr from 'qrcode-terminal';
 import Whatsapp from 'whatsapp-web.js';
+import { ADMIN_WA_NO } from './utils/constant.js';
 
 const { Client, LocalAuth } = Whatsapp;
 
@@ -15,7 +16,15 @@ waConn.on('qr', (qrText) => {
   qr.generate(qrText, { small: true });
 });
 
-waConn.on('ready', () => {
+waConn.on('ready', async () => {
+  let to = ADMIN_WA_NO;
+  to = to.replace(/[^0-9]/g, '');
+  to += '@c.us';
+  const isRegistered = await waConn.isRegisteredUser(to);
+  if (!isRegistered) {
+    console.log('WhatsApp number is not registered');
+  }
+  await waConn.sendMessage(to, 'WhatsApp connection for Frontline is ready!');
   console.log('WhatsApp connection is ready!');
 });
 
