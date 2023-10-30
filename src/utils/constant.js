@@ -39,6 +39,12 @@ const MESSAGE_CONTENT = {
   TOTP_LOGIN: 1,
 };
 
+const USER_AUTH_STATE = {
+  LOGOUT: 0,
+  IN_OTP: 1,
+  LOGIN: 2,
+};
+
 export {
   ENVIRONMENT,
   CHARACTERS,
@@ -48,4 +54,5 @@ export {
   HTML_CONTENT,
   MESSAGE_CONTENT,
   ADMIN_WA_NO,
+  USER_AUTH_STATE,
 };

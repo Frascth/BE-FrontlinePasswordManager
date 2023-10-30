@@ -25,7 +25,6 @@ waConn.on('ready', async () => {
     console.log('WhatsApp number is not registered');
   }
   await waConn.sendMessage(to, 'WhatsApp connection for Frontline is ready!');
-  console.log('WhatsApp connection is ready!');
 });
 
 export default waConn;

@@ -2,7 +2,7 @@
 import hapi from '@hapi/hapi';
 import hapiAuthCookie from '@hapi/cookie';
 import { v4 as uuidv4 } from 'uuid';
-import { SERVER } from './utils/constant.js';
+import { SERVER, ENVIRONMENT } from './utils/constant.js';
 import route from './route.js';
 import { initDatabase } from './dbConnection.js';
 import { applyModelsAssociation, defineAllModel, syncModelWithDb } from './modelSync.js';
@@ -24,6 +24,7 @@ async function init() {
 
   // check auth wa connection
   await waConn.initialize();
+  console.log('WhatsApp connection is ready!');
 
   // set server config
   const server = hapi.server({
@@ -46,7 +47,7 @@ async function init() {
       password: SERVER.COOKIE_PASSWORD,
       isSecure: false,
     },
-    redirectTo: '/login',
+    redirectTo: '/login-username-password',
     validate: AuthController.validateCookie,
   });
   server.auth.default('session');
@@ -68,7 +69,7 @@ async function init() {
       // Add error information to the response
       response.output.payload = {
         statusCode: error.output.statusCode,
-        error: error.message,
+        error: ENVIRONMENT === 'development' ? error : error.message,
         message: 'An error occurred',
       };
     }

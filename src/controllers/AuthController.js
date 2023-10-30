@@ -2,10 +2,48 @@ import { Sequelize } from 'sequelize';
 import T3Otp from '../models/T3Otp.js';
 import T3User from '../models/T3User.js';
 import Util from '../utils/Util.js';
-import { TWO_FAC_AUTH } from '../utils/constant.js';
+import { TWO_FAC_AUTH, USER_AUTH_STATE } from '../utils/constant.js';
 
 class AuthController {
 
+  static async loginUsernamePassword(request, h) {
+    const { username, password } = request.payload;
+    const user = await T3User.findOne({
+      where: {
+        username },
+    });
+
+    if (!user) {
+      return Util.response(h, false, 'Failed, user not found', 404);
+    }
+
+    let isValid;
+    try {
+      isValid = await Util.comparePassword(password, user.hashedPassword);
+    } catch (error) {
+      return Util.response(h, false, error, 401);
+    }
+
+    if (!isValid) {
+      return Util.response(h, false, 'Failed, unauthorized', 401);
+    }
+
+    request.payload.userPk = user.pk;
+    const resultSendOtp = await AuthController.sendOtp(request, h);
+
+    user.authState = USER_AUTH_STATE.IN_OTP;
+    await user.save();
+
+    return Util.response(h, true, 'Success, login success', 200);
+
+  }
+
+  /**
+   * used for server auth
+   * @param {*} request
+   * @param {*} session
+   * @returns
+   */
   static async validateCookie(request, session) {
     const user = await T3User.findOne({ where: { userPk: session.id } });
     if (!user) {
@@ -60,7 +98,7 @@ class AuthController {
       order: [['createdAt', 'DESC']],
     });
 
-    const lastTimeOtp = otp.createdAt || false;
+    const lastTimeOtp = otp ? otp.createdAt : false;
 
     if (lastTimeOtp) {
       const isValidRequest = Util.isDateAboveInterval(lastTimeOtp, new Date(), 3, 'minutes');
@@ -100,7 +138,7 @@ class AuthController {
       return Util.response(h, false, 'Failed, user not found', 404);
     }
 
-    const isExpired = Util.isDateAboveInterval(user.updatedAt, Util.getUTCDateNow(), 3, 'minute');
+    const isExpired = Util.isDateAboveInterval(user.updatedAt, Util.getUTCDateNow(), 3, 'day');
     if (isExpired) {
       await user.updateActivationLink();
       await user.getActivationLinkEmail();

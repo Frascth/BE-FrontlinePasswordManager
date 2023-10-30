@@ -7,7 +7,7 @@ class UserController {
   static async createUser(request, h) {
 
     // get data from client
-    let { username, email, password, twoFacAuth } = request.payload;
+    let { username, email, password, twoFacAuth, waNumber } = request.payload;
     username = Util.escapeInput(username);
     email = Util.escapeInput(email);
     twoFacAuth = Util.escapeInput(twoFacAuth);
@@ -32,6 +32,7 @@ class UserController {
         salt,
         activationKey,
         twoFacAuth,
+        waNumber,
         createdBy: 'self',
         updatedBy: 'self',
       });

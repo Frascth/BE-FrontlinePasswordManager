@@ -86,6 +86,11 @@ T3User.init({
     type: DataTypes.STRING(500),
     allowNull: true,
   },
+  authState: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
   lastLoginTime: {
     type: DataTypes.DATE,
   },

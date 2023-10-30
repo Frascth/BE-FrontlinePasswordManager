@@ -165,6 +165,11 @@ class Util {
     }
   }
 
+  static async comparePassword(plain, hashedPassword) {
+    const result = await bcrypt.compare(plain, hashedPassword);
+    return result;
+  }
+
   static generateActivationKey(username) {
     return username + nanoid(30);
   }
