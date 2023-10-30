@@ -6,6 +6,15 @@ import { TWO_FAC_AUTH } from '../utils/constant.js';
 
 class AuthController {
 
+  static async validateCookie(request, session) {
+    const user = await T3User.findOne({ where: { userPk: session.id } });
+    if (!user) {
+      return { valid: false };
+    }
+
+    return { valid: true, credentials: user };
+  }
+
   static async confirmOtp(request, h) {
     let { userPk, otpCode } = request.payload;
     userPk = userPk.replace(/ /g, '');
@@ -62,8 +71,10 @@ class AuthController {
 
     if (user.twoFacAuth === TWO_FAC_AUTH.TOTP_WA) {
       await T3Otp.sendOtpWa(user.waNumber, userPk);
-    } else {
+    } else if (user.twoFacAuth === TWO_FAC_AUTH.TOTP_GMAIL) {
       await T3Otp.sendOtpEmail(user.email, userPk);
+    } else {
+      return Util.response(h, false, 'Failed, user doesn"t have valid otp method', 404);
     }
 
     return Util.response(h, true, 'Success, otp sent', 200);

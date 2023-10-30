@@ -6,12 +6,13 @@ config();
 // just change this to development or production
 // the rest of constant will adapt
 const ENVIRONMENT = 'development';
-
+const CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{}|;:,.<>?';
 const { ADMIN_WA_NO } = process.env;
 
 const SERVER = {
   HOST: ENVIRONMENT === 'development' ? process.env.DEV_SERVER_HOST : process.env.PROD_SERVER_HOST,
   PORT: ENVIRONMENT === 'development' ? process.env.DEV_SERVER_PORT : process.env.PROD_SERVER_PORT,
+  COOKIE_PASSWORD: process.env.COOKIE_PASSWORD,
 };
 
 const DB = {
@@ -38,4 +39,13 @@ const MESSAGE_CONTENT = {
   TOTP_LOGIN: 1,
 };
 
-export { ENVIRONMENT, SERVER, DB, TWO_FAC_AUTH, HTML_CONTENT, MESSAGE_CONTENT, ADMIN_WA_NO };
+export {
+  ENVIRONMENT,
+  CHARACTERS,
+  SERVER,
+  DB,
+  TWO_FAC_AUTH,
+  HTML_CONTENT,
+  MESSAGE_CONTENT,
+  ADMIN_WA_NO,
+};

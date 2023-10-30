@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-shadow */
 import crypto from 'crypto';
@@ -7,9 +8,14 @@ import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import waConn from '../waConnection.js';
-import { ENVIRONMENT } from './constant.js';
+import { ENVIRONMENT, CHARACTERS } from './constant.js';
 
 class Util {
+
+  static generateRandomString(length = 40) {
+    const charArray = Array.from({ length }, () => CHARACTERS[crypto.randomBytes(1).readUInt8() % CHARACTERS.length]);
+    return charArray.join('');
+  }
 
   static isEmail(inputString) {
     // Regular expression pattern for a simple email validation

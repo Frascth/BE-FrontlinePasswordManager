@@ -1,32 +1,15 @@
 /* eslint-disable no-console */
 import hapi from '@hapi/hapi';
+import hapiAuthCookie from '@hapi/cookie';
+import { v4 as uuidv4 } from 'uuid';
 import { SERVER } from './utils/constant.js';
 import route from './route.js';
 import { initDatabase } from './dbConnection.js';
 import { applyModelsAssociation, defineAllModel, syncModelWithDb } from './modelSync.js';
 import waConn from './waConnection.js';
+import AuthController from './controllers/AuthController.js';
 
 async function init() {
-  // set server config
-  const server = hapi.server({
-    host: SERVER.HOST,
-    port: SERVER.PORT,
-    routes: {
-      payload: {
-        parse: true,
-        allow: 'multipart/form-data',
-        multipart: { output: 'stream' },
-      },
-    },
-  });
-
-  // set server routes
-  server.route(route);
-
-  // start server
-  await server.start();
-  console.log(`Server running on ${server.info.uri}`);
-
   // check auth db connection
   await initDatabase();
 
@@ -41,6 +24,39 @@ async function init() {
 
   // check auth wa connection
   await waConn.initialize();
+
+  // set server config
+  const server = hapi.server({
+    host: SERVER.HOST,
+    port: SERVER.PORT,
+    routes: {
+      payload: {
+        parse: true,
+        allow: 'multipart/form-data',
+        multipart: { output: 'stream' },
+      },
+    },
+  });
+
+  // set server auth
+  await server.register(hapiAuthCookie);
+  server.auth.strategy('session', 'cookie', {
+    cookie: {
+      name: uuidv4(),
+      password: SERVER.COOKIE_PASSWORD,
+      isSecure: false,
+    },
+    redirectTo: '/login',
+    validate: AuthController.validateCookie,
+  });
+  server.auth.default('session');
+
+  // set server routes
+  server.route(route);
+
+  // start server
+  await server.start();
+  console.log(`Server running on ${server.info.uri}`);
 
   // Create a global error handler
   server.ext('onPreResponse', (request, h) => {
