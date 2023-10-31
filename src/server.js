@@ -24,7 +24,6 @@ async function init() {
 
   // check auth wa connection
   waConn.initialize();
-  console.log('WhatsApp connection is ready!');
 
   // set server config
   const server = hapi.server({
@@ -36,6 +35,10 @@ async function init() {
         allow: 'multipart/form-data',
         multipart: { output: 'stream' },
       },
+      cors: {
+        origin: ['*'], // Replace with your allowed origins or use '*' for any origin
+        additionalHeaders: ['cache-control', 'x-requested-with'],
+      },
     },
   });
 
@@ -46,6 +49,7 @@ async function init() {
       name: uuidv4(),
       password: SERVER.COOKIE_PASSWORD,
       isSecure: false,
+      ttl: ENVIRONMENT === 'development' ? 12 * 3600 * 1000 : 60 * 60 * 1000,
     },
     redirectTo: '/login-username-password',
     validate: AuthController.validateCookie,

@@ -23,6 +23,7 @@ waConn.on('ready', async () => {
   const isRegistered = await waConn.isRegisteredUser(to);
   if (!isRegistered) {
     console.log('WhatsApp number is not registered');
+    console.log('WhatsApp connection is ready!');
   }
   await waConn.sendMessage(to, 'WhatsApp connection for Frontline is ready!');
 });

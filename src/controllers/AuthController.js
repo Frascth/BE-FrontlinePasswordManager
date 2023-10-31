@@ -49,12 +49,13 @@ class AuthController {
    * @returns
    */
   static async validateCookie(request, session) {
-    const user = await T3User.findOne({ where: { userPk: session.id } });
+    console.log('hereeeeeeeeeeeeeeeee', session.id);
+    const user = await T3User.findOne({ where: { username: session.id } });
     if (!user) {
-      return { valid: false };
+      return { isValid: false };
     }
 
-    return { valid: true, credentials: user };
+    return { isValid: true, credentials: user };
   }
 
   static async loginConfirmOtp(request, h) {
@@ -108,8 +109,9 @@ class AuthController {
     await user.save();
 
     // cookie defining
-    request.cookieAuth.set({ id: account.id });
-    return Util.response(h, true, 'Success, otp confirmed', 200);
+    // request.cookieAuth.set({ id: Util.encryptText(user.username) });
+    request.cookieAuth.set({ id: user.username });
+    return Util.response(h, true, 'Success, login confirmed', 200);
 
   }
 

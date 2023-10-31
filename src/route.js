@@ -3,6 +3,7 @@
 import UserController from './controllers/UserController.js';
 import AuthController from './controllers/AuthController.js';
 import { ENVIRONMENT } from './utils/constant.js';
+import SafeStorageController from './controllers/SafeStorageController.js';
 
 let route;
 
@@ -49,6 +50,14 @@ const prodRoute = [
       auth: false,
     },
   },
+  {
+    method: 'GET',
+    path: '/test-session',
+    handler: (request, h) => 'hello world',
+    options: {
+      auth: 'session',
+    },
+  },
 ];
 
 route = prodRoute;
@@ -64,13 +73,20 @@ if (ENVIRONMENT === 'development') {
         auth: false,
       },
     },
-
     {
       method: 'POST',
       path: '/send-message/email',
       handler: AuthController.sendMessageEmail,
       options: {
         auth: false,
+      },
+    },
+    {
+      method: 'GET',
+      path: '/check-session',
+      handler: SafeStorageController.checkSession,
+      options: {
+        auth: 'session',
       },
     },
   ];
