@@ -9,7 +9,7 @@ import T1MessageContent from './models/T1MessageContent.js';
  * callint a Model.init and add all model to sequelizeConn.models
  * its later use on sequelizeConn.sync() to create table
  */
-async function defineAllModel() {
+function defineAllModel() {
   // get all model
   const models = [
     T1HtmlContent,

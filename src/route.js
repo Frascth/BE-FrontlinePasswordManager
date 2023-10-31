@@ -34,9 +34,11 @@ const prodRoute = [
   {
     method: 'PUT',
     path: '/confirm-otp',
-    handler: AuthController.confirmOtp,
+    handler: AuthController.loginConfirmOtp,
     options: {
-      auth: false,
+      auth: {
+        mode: 'try',
+      },
     },
   },
   {

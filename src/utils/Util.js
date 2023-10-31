@@ -8,7 +8,7 @@ import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import waConn from '../waConnection.js';
-import { ENVIRONMENT, CHARACTERS } from './constant.js';
+import { ENVIRONMENT, CHARACTERS, SERVER } from './constant.js';
 
 class Util {
 
@@ -163,6 +163,29 @@ class Util {
       console.error(err);
       throw err; // Optionally re-throw the error
     }
+  }
+
+  static encryptText(plainText) {
+    const encryptionKey = Buffer.from(SERVER.ENCRYPTION_KEY_HEX, 'hex');
+    const initializationVector = Buffer.from(SERVER.INITIAL_VECTOR_HEX, 'hex');
+    const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, initializationVector);
+
+    let encryptedText = cipher.update(plainText, 'utf8', 'hex');
+    encryptedText += cipher.final('hex');
+
+    return encryptedText;
+
+  }
+
+  static decryptText(encryptedText) {
+    const encryptionKey = Buffer.from(SERVER.ENCRYPTION_KEY_HEX, 'hex');
+    const initializationVector = Buffer.from(SERVER.INITIAL_VECTOR_HEX, 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', encryptionKey, initializationVector);
+
+    let decryptedText = decipher.update(encryptedText, 'hex', 'utf8');
+    decryptedText += decipher.final('utf8');
+
+    return decryptedText;
   }
 
   static async comparePassword(plain, hashedPassword) {

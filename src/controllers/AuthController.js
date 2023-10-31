@@ -1,4 +1,6 @@
-import { Sequelize } from 'sequelize';
+/* eslint-disable max-len */
+/* eslint-disable prefer-const */
+import { Op } from 'sequelize';
 import T3Otp from '../models/T3Otp.js';
 import T3User from '../models/T3User.js';
 import Util from '../utils/Util.js';
@@ -7,10 +9,9 @@ import { TWO_FAC_AUTH, USER_AUTH_STATE } from '../utils/constant.js';
 class AuthController {
 
   static async loginUsernamePassword(request, h) {
-    const { username, password } = request.payload;
+    let { username, password } = request.payload;
     const user = await T3User.findOne({
-      where: {
-        username },
+      where: { username: { [Op.iLike]: username }, isDeleted: false },
     });
 
     if (!user) {
@@ -30,6 +31,9 @@ class AuthController {
 
     request.payload.userPk = user.pk;
     const resultSendOtp = await AuthController.sendOtp(request, h);
+    if (!resultSendOtp.source.status) {
+      return resultSendOtp;
+    }
 
     user.authState = USER_AUTH_STATE.IN_OTP;
     await user.save();
@@ -53,20 +57,38 @@ class AuthController {
     return { valid: true, credentials: user };
   }
 
-  static async confirmOtp(request, h) {
-    let { userPk, otpCode } = request.payload;
-    userPk = userPk.replace(/ /g, '');
+  static async loginConfirmOtp(request, h) {
+    let { username, password, otpCode } = request.payload;
+    username = username.toLowerCase();
     otpCode = otpCode.replace(/ /g, '');
-    if (!userPk || !otpCode) {
+    if (!username || !otpCode) {
       return Util.response(h, false, 'Failed, user not found or otp expired', 404);
     }
 
+    const user = await T3User.findOne({
+      where: { username: { [Op.iLike]: username }, isDeleted: false, authState: USER_AUTH_STATE.IN_OTP },
+    });
+
+    if (!user) {
+      return Util.response(h, false, 'Failed, user not found or otp expired', 404);
+    }
+
+    let isValid;
+    try {
+      isValid = await Util.comparePassword(password, user.hashedPassword);
+    } catch (error) {
+      return Util.response(h, false, error, 401);
+    }
+
+    if (!isValid) {
+      return Util.response(h, false, 'Failed, unauthorized', 401);
+    }
+
     const threeMinutesAgo = new Date(Util.getUTCDateNow() - 3 * 60 * 1000);
-    const { Op } = Sequelize;
 
     const otp = await T3Otp.findOne({
       where: {
-        userFk: userPk,
+        userFk: user.pk,
         otpCode,
         createdAt: {
           [Op.gte]: threeMinutesAgo,
@@ -77,11 +99,16 @@ class AuthController {
     });
 
     if (!otp) {
-      return Util.response(h, false, 'Failed, user not found or otp expired', 404);
+      return Util.response(h, false, 'Failed, invalid or expired otp', 404);
     }
 
     otp.isApprov = true;
     await otp.save();
+    user.authState = USER_AUTH_STATE.LOGIN;
+    await user.save();
+
+    // cookie defining
+    request.cookieAuth.set({ id: account.id });
     return Util.response(h, true, 'Success, otp confirmed', 200);
 
   }
@@ -94,7 +121,7 @@ class AuthController {
     }
 
     const otp = await T3Otp.findOne({
-      where: { userFk: userPk },
+      where: { userFk: userPk, isApprov: false },
       order: [['createdAt', 'DESC']],
     });
 

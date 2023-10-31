@@ -14,16 +14,16 @@ async function init() {
   await initDatabase();
 
   // define all model
-  await defineAllModel();
+  defineAllModel();
 
   // apply configure assoc each model and table
-  await applyModelsAssociation();
+  applyModelsAssociation();
 
   // sync sequelize model with db table
-  await syncModelWithDb();
+  syncModelWithDb();
 
   // check auth wa connection
-  await waConn.initialize();
+  waConn.initialize();
   console.log('WhatsApp connection is ready!');
 
   // set server config

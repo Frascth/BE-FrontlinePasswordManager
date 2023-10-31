@@ -5,8 +5,10 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
+    "learn": "node src/learn.js",
     "lint": "eslint src/",
-    "dev": "nodemon src/server.js",
+    "dev": "node src/server.js",
+    "dev-ar": "nodemon src/server.js",
     "prod": "node src/server.js"
   },
   "keywords": [],

@@ -53,7 +53,10 @@ T3User.init({
   username: {
     type: DataTypes.STRING(500),
     allowNull: false,
-    unique: true,
+    unique: {
+      name: 'unique_username',
+      msg: 'Username already used',
+    },
     validate: {
       is: /^[a-zA-Z0-9-]+$/,
     },
@@ -61,7 +64,10 @@ T3User.init({
   email: {
     type: DataTypes.STRING(500),
     allowNull: false,
-    unique: true,
+    unique: {
+      name: 'unique_email',
+      msg: 'Email already used',
+    },
     validate: {
       isEmail: true,
     },
