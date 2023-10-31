@@ -25,14 +25,6 @@ const prodRoute = [
     },
   },
   {
-    method: 'POST',
-    path: '/send-otp',
-    handler: AuthController.sendOtp,
-    options: {
-      auth: false,
-    },
-  },
-  {
     method: 'PUT',
     path: '/confirm-otp',
     handler: AuthController.loginConfirmOtp,
@@ -48,14 +40,6 @@ const prodRoute = [
     handler: AuthController.loginUsernamePassword,
     options: {
       auth: false,
-    },
-  },
-  {
-    method: 'GET',
-    path: '/test-session',
-    handler: (request, h) => 'hello world',
-    options: {
-      auth: 'session',
     },
   },
 ];

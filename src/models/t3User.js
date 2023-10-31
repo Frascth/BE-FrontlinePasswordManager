@@ -76,10 +76,6 @@ T3User.init({
     type: DataTypes.STRING(500),
     allowNull: false,
   },
-  salt: {
-    type: DataTypes.STRING(500),
-    allowNull: false,
-  },
   activationKey: {
     type: DataTypes.STRING(4000),
     allowNull: false,

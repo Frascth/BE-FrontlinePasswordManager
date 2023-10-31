@@ -2,8 +2,7 @@
 class SafeStorageController {
 
   static async checkSession(request, h) {
-    return 'tes';
-    return { id: request.state.session };
+    return request.auth;
   }
 
 }

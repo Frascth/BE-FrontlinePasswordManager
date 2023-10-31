@@ -49,8 +49,7 @@ class AuthController {
    * @returns
    */
   static async validateCookie(request, session) {
-    console.log('hereeeeeeeeeeeeeeeee', session.id);
-    const user = await T3User.findOne({ where: { username: session.id } });
+    const user = await T3User.findOne({ where: { pk: Util.decryptText(session.id) } });
     if (!user) {
       return { isValid: false };
     }
@@ -109,8 +108,7 @@ class AuthController {
     await user.save();
 
     // cookie defining
-    // request.cookieAuth.set({ id: Util.encryptText(user.username) });
-    request.cookieAuth.set({ id: user.username });
+    request.cookieAuth.set({ id: Util.encryptText(user.pk) });
     return Util.response(h, true, 'Success, login confirmed', 200);
 
   }
