@@ -4,18 +4,24 @@ import { Op } from 'sequelize';
 import T3Otp from '../models/T3Otp.js';
 import T3User from '../models/T3User.js';
 import Util from '../utils/Util.js';
-import { TWO_FAC_AUTH, USER_AUTH_STATE } from '../utils/constant.js';
+import { TWO_FAC_AUTH, USER_AUTH_STATE, USER_STATUS } from '../utils/constant.js';
 
 class AuthController {
 
   static async loginUsernamePassword(request, h) {
     let { username, password } = request.payload;
     const user = await T3User.findOne({
-      where: { username: { [Op.iLike]: username }, isDeleted: false },
+      where: {
+        username: { [Op.iLike]: username },
+        isDeleted: false },
     });
 
     if (!user) {
       return Util.response(h, false, 'Failed, user not found', 404);
+    }
+
+    if (user.activationKey !== USER_STATUS.ACTIVE) {
+      return Util.response(h, false, 'Failed, user is not active', 403);
     }
 
     let isValid;
@@ -66,11 +72,19 @@ class AuthController {
     }
 
     const user = await T3User.findOne({
-      where: { username: { [Op.iLike]: username }, isDeleted: false, authState: USER_AUTH_STATE.IN_OTP },
+      where: { username: { [Op.iLike]: username }, isDeleted: false },
     });
 
     if (!user) {
       return Util.response(h, false, 'Failed, user not found or otp expired', 404);
+    }
+
+    if (user.authState !== USER_AUTH_STATE.IN_OTP) {
+      return Util.response(h, false, 'Failed, otp session expired please re-login', 401);
+    }
+
+    if (user.activationKey !== USER_STATUS.ACTIVE) {
+      return Util.response(h, false, 'Failed, user is not active', 403);
     }
 
     let isValid;

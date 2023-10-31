@@ -8,6 +8,7 @@ import { initDatabase } from './dbConnection.js';
 import { applyModelsAssociation, defineAllModel, syncModelWithDb } from './modelSync.js';
 import waConn from './waConnection.js';
 import AuthController from './controllers/AuthController.js';
+import initCron from './cron.js';
 
 async function init() {
   // check auth db connection
@@ -62,6 +63,9 @@ async function init() {
   // start server
   await server.start();
   console.log(`Server running on ${server.info.uri}`);
+
+  // init cron
+  initCron();
 
   // Create a global error handler
   server.ext('onPreResponse', (request, h) => {

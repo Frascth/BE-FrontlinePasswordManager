@@ -13,15 +13,11 @@ class UserController {
     twoFacAuth = Util.escapeInput(twoFacAuth);
 
     // get salt and hash password
-    const { salt, hashedPassword } = await Util.hashPassword(password);
+    const { hashedPassword } = await Util.hashPassword(password);
 
     // generate activation key
     const activationKey = Util.generateActivationKey(username);
 
-    let data = {
-      pk: undefined,
-      activationKey: undefined,
-    };
     let newUser;
 
     try {
@@ -29,7 +25,6 @@ class UserController {
         username,
         email,
         hashedPassword,
-        salt,
         activationKey,
         twoFacAuth,
         waNumber,
@@ -37,15 +32,14 @@ class UserController {
         updatedBy: 'self',
       });
 
-      data.pk = newUser.pk;
     } catch (error) {
-      let response = Util.response(h, false, error, 400, data);
+      let response = Util.response(h, false, error, 400);
       return response;
     }
 
     await newUser.getActivationLinkEmail();
 
-    return Util.response(h, true, 'Success to create new user', 201, data);
+    return Util.response(h, true, 'Success to create new user', 201);
   }
 
 }

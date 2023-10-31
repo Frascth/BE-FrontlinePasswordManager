@@ -47,6 +47,10 @@ const USER_AUTH_STATE = {
   LOGIN: 2,
 };
 
+const USER_STATUS = {
+  ACTIVE: 'ACTIVE',
+};
+
 export {
   ENVIRONMENT,
   CHARACTERS,
@@ -57,4 +61,5 @@ export {
   MESSAGE_CONTENT,
   ADMIN_WA_NO,
   USER_AUTH_STATE,
+  USER_STATUS,
 };
