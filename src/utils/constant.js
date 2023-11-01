@@ -9,6 +9,10 @@ const ENVIRONMENT = 'development';
 const CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{}|;:,.<>?';
 const { ADMIN_WA_NO } = process.env;
 
+const ROUTE = {
+  LOGIN: '/login-username-password',
+};
+
 const SERVER = {
   HOST: ENVIRONMENT === 'development' ? process.env.DEV_SERVER_HOST : process.env.PROD_SERVER_HOST,
   PORT: ENVIRONMENT === 'development' ? process.env.DEV_SERVER_PORT : process.env.PROD_SERVER_PORT,
@@ -63,4 +67,5 @@ export {
   ADMIN_WA_NO,
   USER_AUTH_STATE,
   USER_STATUS,
+  ROUTE,
 };

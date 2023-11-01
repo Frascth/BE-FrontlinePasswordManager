@@ -47,6 +47,14 @@ const prodRoute = [
     path: '/logout',
     handler: AuthController.logout,
   },
+  {
+    method: 'POST',
+    path: '/send-otp',
+    handler: AuthController.sendOtp,
+    options: {
+      auth: false,
+    },
+  },
 ];
 
 route = prodRoute;

@@ -4,14 +4,17 @@ import { scheduleJob } from 'node-schedule';
 import T3User from './models/T3User.js';
 import { USER_AUTH_STATE } from './utils/constant.js';
 
-async function resetInOtpSession() {
-  // every 30 minutes
+async function resetSession() {
+  // every 1 minutes
+  // check if user already in otp or in login session for 30 or more minutes, then logout
 
   const updatePromise = [];
   const users = await T3User.findAll({
     where: {
       isDeleted: false,
-      authState: USER_AUTH_STATE.IN_OTP,
+      authState: {
+        [Op.ne]: USER_AUTH_STATE.LOGOUT,
+      },
       [Op.and]: literal(`(EXTRACT(EPOCH FROM (NOW() AT TIME ZONE 'UTC' - "updatedAt" AT TIME ZONE 'UTC')) / 60) >= 30`),
     },
   });
@@ -26,11 +29,11 @@ async function resetInOtpSession() {
   }
 
   await Promise.all(updatePromise.map((asyncFunc) => asyncFunc()));
-  console.log('resetInOtpSession every 30 minutes done');
+  console.log('resetSession every 1 minutes done');
 }
 
 function initCron() {
-  scheduleJob('0/30 * * * *', resetInOtpSession);
+  scheduleJob('0/1 * * * *', resetSession);
 }
 
 export default initCron;

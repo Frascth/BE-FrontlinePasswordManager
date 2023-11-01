@@ -12,6 +12,13 @@ import { ENVIRONMENT, CHARACTERS, SERVER } from './constant.js';
 
 class Util {
 
+  static isCookiePresent(request) {
+    if (!request.headers.cookie || !request.headers.cookie.includes(`${SERVER.COOKIE_NAME}=`)) {
+      return false;
+    }
+    return true;
+  }
+
   static generateRandomString(length = 40) {
     const charArray = Array.from({ length }, () => CHARACTERS[crypto.randomBytes(1).readUInt8() % CHARACTERS.length]);
     return charArray.join('');

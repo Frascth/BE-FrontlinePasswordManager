@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import T3Otp from '../models/T3Otp.js';
 import T3User from '../models/T3User.js';
 import Util from '../utils/Util.js';
-import { ENVIRONMENT, SERVER, TWO_FAC_AUTH, USER_AUTH_STATE, USER_STATUS } from '../utils/constant.js';
+import { TWO_FAC_AUTH, USER_AUTH_STATE, USER_STATUS, ROUTE } from '../utils/constant.js';
 
 class AuthController {
 
@@ -21,21 +21,6 @@ class AuthController {
     user.authState = USER_AUTH_STATE.LOGOUT;
     await user.save();
     request.cookieAuth.clear();
-    // const cookieOptions = {
-    //   // encoding: 'none', // Optional encoding
-    //   isSecure: ENVIRONMENT === 'production', // Set to true if using HTTPS
-    //   isHttpOnly: true, // Recommended for security
-    //   path: '/', // Cookie path
-    //   // domain: 'example.com', // Optional cookie domain
-    //   // ttl: 24 * 60 * 60 * 1000, // Time to live in milliseconds (1 day)
-    //   expires: new Date(Date.now() - 24 * 60 * 60 * 1000), // You can also set the expiration date directly
-    //   name: SERVER.COOKIE_NAME,
-    //   value: 'cookieValue',
-    // };
-
-    // // Set the cookie with the specified options
-    // h.state(SERVER.COOKIE_NAME, 'cookieValue', cookieOptions);
-
     return Util.response(h, true, 'Success, logout', 200);
 
   }
@@ -45,7 +30,8 @@ class AuthController {
     const user = await T3User.findOne({
       where: {
         username: { [Op.iLike]: username },
-        isDeleted: false },
+        isDeleted: false,
+      },
     });
 
     if (!user) {
@@ -65,6 +51,15 @@ class AuthController {
 
     if (!isValid) {
       return Util.response(h, false, 'Failed, unauthorized', 401);
+    }
+
+    if (user.authState === USER_AUTH_STATE.LOGIN && Util.isCookiePresent(request)) {
+      return Util.response(h, false, 'Failed, user already login', 401);
+    }
+
+    if (user.authState !== USER_AUTH_STATE.LOGOUT && !Util.isCookiePresent(request)) {
+      user.authState = USER_AUTH_STATE.LOGOUT;
+      await user.save();
     }
 
     request.payload.userPk = user.pk;
@@ -111,10 +106,6 @@ class AuthController {
       return Util.response(h, false, 'Failed, user not found or otp expired', 404);
     }
 
-    if (user.authState !== USER_AUTH_STATE.IN_OTP) {
-      return Util.response(h, false, 'Failed, otp session expired please re-login', 401);
-    }
-
     if (user.activationKey !== USER_STATUS.ACTIVE) {
       return Util.response(h, false, 'Failed, user is not active', 403);
     }
@@ -128,6 +119,14 @@ class AuthController {
 
     if (!isValid) {
       return Util.response(h, false, 'Failed, unauthorized', 401);
+    }
+
+    if (user.authState === USER_AUTH_STATE.LOGIN && Util.isCookiePresent(request)) {
+      return Util.response(h, false, 'Failed, user already login', 401);
+    }
+
+    if (user.authState !== USER_AUTH_STATE.IN_OTP) {
+      return Util.response(h, false, 'Failed, otp session expired please re-login', 401);
     }
 
     const threeMinutesAgo = new Date(Util.getUTCDateNow() - 3 * 60 * 1000);
@@ -161,20 +160,44 @@ class AuthController {
   }
 
   static async sendOtp(request, h) {
-    const { userPk } = request.payload;
-    const user = await T3User.findOne({ where: { pk: userPk } });
+    const { username, password } = request.payload;
+    const user = await T3User.findOne({
+      where: {
+        username: { [Op.iLike]: username },
+        isDeleted: false,
+      },
+    });
     if (!user) {
       return Util.response(h, false, 'Failed, user not found', 404);
     }
 
+    let isValid;
+    try {
+      isValid = await Util.comparePassword(password, user.hashedPassword);
+    } catch (error) {
+      return Util.response(h, false, error, 401);
+    }
+
+    if (!isValid) {
+      return Util.response(h, false, 'Failed, unauthorized', 401);
+    }
+
+    if (user.authState === USER_AUTH_STATE.LOGIN && Util.isCookiePresent(request)) {
+      return Util.response(h, false, 'Failed, user already login', 401);
+    }
+
+    if (user.authState !== USER_AUTH_STATE.IN_OTP && request.url.pathname !== ROUTE.LOGIN) {
+      return Util.response(h, false, 'Failed, session expired please re-login', 401);
+    }
+
     const otp = await T3Otp.findOne({
-      where: { userFk: userPk, isApprov: false },
+      where: { userFk: user.pk, isApprov: false },
       order: [['createdAt', 'DESC']],
     });
 
     const lastTimeOtp = otp ? otp.createdAt : false;
 
-    if (lastTimeOtp) {
+    if (lastTimeOtp && request.url.pathname !== ROUTE.LOGIN) {
       const isValidRequest = Util.isDateAboveInterval(lastTimeOtp, new Date(), 3, 'minutes');
       if (!isValidRequest) {
         return Util.response(h, false, 'Failed, please wait for 3 minutes to request again', 429);
@@ -182,9 +205,9 @@ class AuthController {
     }
 
     if (user.twoFacAuth === TWO_FAC_AUTH.TOTP_WA) {
-      await T3Otp.sendOtpWa(user.waNumber, userPk);
+      await T3Otp.sendOtpWa(user.waNumber, user.pk);
     } else if (user.twoFacAuth === TWO_FAC_AUTH.TOTP_GMAIL) {
-      await T3Otp.sendOtpEmail(user.email, userPk);
+      await T3Otp.sendOtpEmail(user.email, user.pk);
     } else {
       return Util.response(h, false, 'Failed, user doesn"t have valid otp method', 404);
     }
