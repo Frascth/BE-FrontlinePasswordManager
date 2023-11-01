@@ -4,9 +4,41 @@ import { Op } from 'sequelize';
 import T3Otp from '../models/T3Otp.js';
 import T3User from '../models/T3User.js';
 import Util from '../utils/Util.js';
-import { TWO_FAC_AUTH, USER_AUTH_STATE, USER_STATUS } from '../utils/constant.js';
+import { ENVIRONMENT, SERVER, TWO_FAC_AUTH, USER_AUTH_STATE, USER_STATUS } from '../utils/constant.js';
 
 class AuthController {
+
+  static async logout(request, h) {
+    const { pk } = request.auth.credentials;
+    const user = await T3User.findOne({
+      where: { pk, isDeleted: false, authState: USER_AUTH_STATE.LOGIN },
+    });
+
+    if (!user) {
+      return Util.response(h, false, 'Failed, user login not found', 404);
+    }
+
+    user.authState = USER_AUTH_STATE.LOGOUT;
+    await user.save();
+    request.cookieAuth.clear();
+    // const cookieOptions = {
+    //   // encoding: 'none', // Optional encoding
+    //   isSecure: ENVIRONMENT === 'production', // Set to true if using HTTPS
+    //   isHttpOnly: true, // Recommended for security
+    //   path: '/', // Cookie path
+    //   // domain: 'example.com', // Optional cookie domain
+    //   // ttl: 24 * 60 * 60 * 1000, // Time to live in milliseconds (1 day)
+    //   expires: new Date(Date.now() - 24 * 60 * 60 * 1000), // You can also set the expiration date directly
+    //   name: SERVER.COOKIE_NAME,
+    //   value: 'cookieValue',
+    // };
+
+    // // Set the cookie with the specified options
+    // h.state(SERVER.COOKIE_NAME, 'cookieValue', cookieOptions);
+
+    return Util.response(h, true, 'Success, logout', 200);
+
+  }
 
   static async loginUsernamePassword(request, h) {
     let { username, password } = request.payload;
@@ -119,6 +151,7 @@ class AuthController {
     otp.isApprov = true;
     await otp.save();
     user.authState = USER_AUTH_STATE.LOGIN;
+    user.lastLoginTime = Util.getUTCDateNow();
     await user.save();
 
     // cookie defining

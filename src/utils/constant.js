@@ -12,6 +12,7 @@ const { ADMIN_WA_NO } = process.env;
 const SERVER = {
   HOST: ENVIRONMENT === 'development' ? process.env.DEV_SERVER_HOST : process.env.PROD_SERVER_HOST,
   PORT: ENVIRONMENT === 'development' ? process.env.DEV_SERVER_PORT : process.env.PROD_SERVER_PORT,
+  COOKIE_NAME: process.env.COOKIE_NAME,
   COOKIE_PASSWORD: process.env.COOKIE_PASSWORD,
   ENCRYPTION_KEY_HEX: process.env.COOKIE_ENCRYPTION_KEY_HEX,
   INITIAL_VECTOR_HEX: process.env.COOKIE_INITIAL_VECTOR_HEX,

@@ -42,6 +42,11 @@ const prodRoute = [
       auth: false,
     },
   },
+  {
+    method: 'POST',
+    path: '/logout',
+    handler: AuthController.logout,
+  },
 ];
 
 route = prodRoute;

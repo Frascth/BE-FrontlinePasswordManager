@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import hapi from '@hapi/hapi';
 import hapiAuthCookie from '@hapi/cookie';
-import { v4 as uuidv4 } from 'uuid';
 import { SERVER, ENVIRONMENT } from './utils/constant.js';
 import route from './route.js';
 import { initDatabase } from './dbConnection.js';
@@ -47,10 +46,11 @@ async function init() {
   await server.register(hapiAuthCookie);
   server.auth.strategy('session', 'cookie', {
     cookie: {
-      name: uuidv4(),
+      name: SERVER.COOKIE_NAME,
       password: SERVER.COOKIE_PASSWORD,
-      isSecure: false,
-      ttl: ENVIRONMENT === 'development' ? 12 * 3600 * 1000 : 60 * 60 * 1000,
+      isSecure: ENVIRONMENT === 'production', // if production then true
+      ttl: ENVIRONMENT === 'development' ? 12 * 3600 * 1000 : 30 * 60 * 1000,
+      isHttpOnly: true,
     },
     redirectTo: '/login-username-password',
     validate: AuthController.validateCookie,
