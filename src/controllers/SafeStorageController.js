@@ -2,7 +2,9 @@
 class SafeStorageController {
 
   static async checkSession(request, h) {
-    return request.auth;
+    // const clientIP = request.headers['x-forwarded-for'] || request.info.remoteAddress;
+    const clientIP = request.info.remoteAddress;
+    return `Client IP Address: ${clientIP}`;
   }
 
 }

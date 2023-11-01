@@ -10,41 +10,49 @@ import T3User from './T3User.js';
 class T3Otp extends Model {
 
   static async sendOtpWa(to, userFk) {
+    const transaction = await sequelizeConn.transaction();
 
-    const otpCode = Util.generateRandomNumber(6);
     try {
+      const otpCode = Util.generateRandomNumber(6);
+      const { hashedText: hashedOtpCode } = await Util.hashText(otpCode);
       await this.create({
         userFk,
-        otpCode,
-      });
+        otpCode: hashedOtpCode,
+      }, { transaction });
+      // eslint-disable-next-line max-len
+      let { content: message } = await T1MessageContent.findOne({ where: { pk: MESSAGE_CONTENT.TOTP_LOGIN } });
+      message = message.replace('{{otpCode}}', otpCode);
+      await Util.sendWhatsApp(to, message);
+      await transaction.commit();
     } catch (error) {
-      throw new Error(error);
+      await transaction.rollback();
+      throw error;
     }
 
-    // eslint-disable-next-line max-len
-    let { content: message } = await T1MessageContent.findOne({ where: { pk: MESSAGE_CONTENT.TOTP_LOGIN } });
-    message = message.replace('{{otpCode}}', otpCode);
-    await Util.sendWhatsApp(to, message);
   }
 
   static async sendOtpEmail(to, userFk = 'anonym') {
-    const { username } = await T3User.findOne({ where: { pk: userFk } });
-    const otpCode = Util.generateRandomNumber(6);
+    const transaction = await sequelizeConn.transaction();
 
     try {
+      const { username } = await T3User.findOne({ where: { pk: userFk } });
+      const otpCode = Util.generateRandomNumber(6);
+      const { hashedText: hashedOtpCode } = await Util.hashText(otpCode);
       await T3Otp.create({
         userFk,
-        otpCode,
-      });
+        otpCode: hashedOtpCode,
+      }, { transaction });
+
+      // eslint-disable-next-line max-len
+      let { subject, content: message } = await T1HtmlContent.findOne({ where: { pk: HTML_CONTENT.TOTP_LOGIN } });
+      message = message.replace('{{otpCode}}', otpCode);
+      message = message.replace('{{username}}', username);
+      await Util.sendMail(to, subject, message);
     } catch (error) {
-      throw new Error('Failed, otp not created');
+      await transaction.rollback();
+      throw error;
     }
 
-    // eslint-disable-next-line max-len
-    let { subject, content: message } = await T1HtmlContent.findOne({ where: { pk: HTML_CONTENT.TOTP_LOGIN } });
-    message = message.replace('{{otpCode}}', otpCode);
-    message = message.replace('{{username}}', username);
-    await Util.sendMail(to, subject, message);
   }
 
 }

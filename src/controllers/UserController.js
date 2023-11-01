@@ -13,7 +13,7 @@ class UserController {
     twoFacAuth = Util.escapeInput(twoFacAuth);
 
     // get salt and hash password
-    const { hashedPassword } = await Util.hashPassword(password);
+    const { hashedText } = await Util.hashText(password);
 
     // generate activation key
     const activationKey = Util.generateActivationKey(username);
@@ -24,7 +24,7 @@ class UserController {
       newUser = await T3User.create({
         username,
         email,
-        hashedPassword,
+        hashedPassword: hashedText,
         activationKey,
         twoFacAuth,
         waNumber,

@@ -25,6 +25,22 @@ const prodRoute = [
     },
   },
   {
+    method: 'POST',
+    path: '/login-username-password',
+    handler: AuthController.loginUsernamePassword,
+    options: {
+      auth: false,
+    },
+  },
+  {
+    method: 'POST',
+    path: '/send-otp',
+    handler: AuthController.sendOtp,
+    options: {
+      auth: false,
+    },
+  },
+  {
     method: 'PUT',
     path: '/confirm-otp',
     handler: AuthController.loginConfirmOtp,
@@ -36,25 +52,10 @@ const prodRoute = [
   },
   {
     method: 'POST',
-    path: '/login-username-password',
-    handler: AuthController.loginUsernamePassword,
-    options: {
-      auth: false,
-    },
-  },
-  {
-    method: 'POST',
     path: '/logout',
     handler: AuthController.logout,
   },
-  {
-    method: 'POST',
-    path: '/send-otp',
-    handler: AuthController.sendOtp,
-    options: {
-      auth: false,
-    },
-  },
+
 ];
 
 route = prodRoute;

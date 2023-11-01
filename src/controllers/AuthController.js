@@ -44,7 +44,7 @@ class AuthController {
 
     let isValid;
     try {
-      isValid = await Util.comparePassword(password, user.hashedPassword);
+      isValid = await Util.compareHash(password, user.hashedPassword);
     } catch (error) {
       return Util.response(h, false, error, 401);
     }
@@ -55,11 +55,6 @@ class AuthController {
 
     if (user.authState === USER_AUTH_STATE.LOGIN && Util.isCookiePresent(request)) {
       return Util.response(h, false, 'Failed, user already login', 401);
-    }
-
-    if (user.authState !== USER_AUTH_STATE.LOGOUT && !Util.isCookiePresent(request)) {
-      user.authState = USER_AUTH_STATE.LOGOUT;
-      await user.save();
     }
 
     request.payload.userPk = user.pk;
@@ -94,6 +89,7 @@ class AuthController {
     let { username, password, otpCode } = request.payload;
     username = username.toLowerCase();
     otpCode = otpCode.replace(/ /g, '');
+
     if (!username || !otpCode) {
       return Util.response(h, false, 'Failed, user not found or otp expired', 404);
     }
@@ -112,7 +108,7 @@ class AuthController {
 
     let isValid;
     try {
-      isValid = await Util.comparePassword(password, user.hashedPassword);
+      isValid = await Util.compareHash(password, user.hashedPassword);
     } catch (error) {
       return Util.response(h, false, error, 401);
     }
@@ -134,7 +130,8 @@ class AuthController {
     const otp = await T3Otp.findOne({
       where: {
         userFk: user.pk,
-        otpCode,
+        // otpCode,
+        isApprov: false,
         createdAt: {
           [Op.gte]: threeMinutesAgo,
           [Op.lte]: new Date(),
@@ -145,6 +142,10 @@ class AuthController {
 
     if (!otp) {
       return Util.response(h, false, 'Failed, invalid or expired otp', 404);
+    }
+
+    if (await Util.compareHash(otpCode, otp.otpCode) === false) {
+      return Util.response(h, false, 'Failed, invalid otp', 404);
     }
 
     otp.isApprov = true;
@@ -173,7 +174,7 @@ class AuthController {
 
     let isValid;
     try {
-      isValid = await Util.comparePassword(password, user.hashedPassword);
+      isValid = await Util.compareHash(password, user.hashedPassword);
     } catch (error) {
       return Util.response(h, false, error, 401);
     }
@@ -197,7 +198,7 @@ class AuthController {
 
     const lastTimeOtp = otp ? otp.createdAt : false;
 
-    if (lastTimeOtp && request.url.pathname !== ROUTE.LOGIN) {
+    if (lastTimeOtp) {
       const isValidRequest = Util.isDateAboveInterval(lastTimeOtp, new Date(), 3, 'minutes');
       if (!isValidRequest) {
         return Util.response(h, false, 'Failed, please wait for 3 minutes to request again', 429);

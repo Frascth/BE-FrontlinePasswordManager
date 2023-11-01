@@ -160,11 +160,11 @@ class Util {
     return response;
   }
 
-  static async hashPassword(plainPassword) {
+  static async hashText(plainPassword) {
     try {
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(plainPassword, salt);
-      return { salt, hashedPassword };
+      const hashedText = await bcrypt.hash(plainPassword, salt);
+      return { salt, hashedText };
     } catch (err) {
       // Handle any errors
       console.error(err);
@@ -195,8 +195,8 @@ class Util {
     return decryptedText;
   }
 
-  static async comparePassword(plain, hashedPassword) {
-    const result = await bcrypt.compare(plain, hashedPassword);
+  static async compareHash(plain, hashedText) {
+    const result = await bcrypt.compare(plain, hashedText);
     return result;
   }
 
