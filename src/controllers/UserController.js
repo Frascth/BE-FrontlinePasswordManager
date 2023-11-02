@@ -39,7 +39,7 @@ class UserController {
 
     await newUser.getActivationLinkEmail();
 
-    return Util.response(h, true, 'Success to create new user', 201);
+    return Util.response(h, true, 'Success, user created', 201);
   }
 
 }

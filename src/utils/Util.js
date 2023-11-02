@@ -8,7 +8,7 @@ import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import waConn from '../waConnection.js';
-import { ENVIRONMENT, CHARACTERS, SERVER } from './constant.js';
+import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL } from './constant.js';
 
 class Util {
 
@@ -103,16 +103,15 @@ class Util {
     });
   }
 
-  static sendMail(to, subject, html, text = '') {
-    // Create a Nodemailer transporter with your SMTP server details
+  static async sendMail(to, subject, html, text = '') {
     const transporter = nodemailer.createTransport({
-      service: 'Gmail', // Use the appropriate email service
-      host: 'smptp.gmail.com',
-      port: 465,
+      service: 'Gmail',
+      host: EMAIL.HOST,
+      port: EMAIL.PORT,
       secure: true,
       auth: {
-        user: 'frontline.mailer@gmail.com', // Your email address
-        pass: 'ibcquoqfewppfsjx', // Your email password or an app-specific password
+        user: EMAIL.USER,
+        pass: EMAIL.PASSWORD,
       },
       // need to disable antivirus example avast to comment this
       tls: { rejectUnauthorized: false },
@@ -120,7 +119,7 @@ class Util {
 
     // Create an email message
     const mailOptions = {
-      from: 'frontline.mailer@gmail.com',
+      from: 'Frontline <frontline.mailer@gmail.com>',
       to,
       subject,
       text,
@@ -129,13 +128,14 @@ class Util {
     };
 
     // Send the email
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log('Error:', error);
-      } else {
-        console.log('Email sent:', info.response);
-      }
-    });
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      // If the email was sent successfully
+      return { status: true, message: 'Success, email sent', info };
+    } catch (error) {
+      // If there was an error sending the email
+      return { status: false, message: error.message };
+    }
 
   }
 

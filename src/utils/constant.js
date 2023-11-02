@@ -22,6 +22,14 @@ const SERVER = {
   INITIAL_VECTOR_HEX: process.env.COOKIE_INITIAL_VECTOR_HEX,
 };
 
+const EMAIL = {
+  HOST: ENVIRONMENT === 'development' ? process.env.DEV_EMAIL_HOST : process.env.PROD_EMAIL_HOST,
+  PORT: ENVIRONMENT === 'development' ? process.env.DEV_EMAIL_PORT : process.env.PROD_EMAIL_PORT,
+  USER: ENVIRONMENT === 'development' ? process.env.DEV_EMAIL_USER : process.env.PROD_EMAIL_USER,
+  PASSWORD: ENVIRONMENT === 'development' ? process.env.DEV_EMAIL_PASSWORD : process.env.PROD_EMAIL_PASSWORD,
+  NAME: ENVIRONMENT === 'development' ? process.env.DEV_EMAIL_NAME : process.env.PROD_EMAIL_NAME,
+};
+
 const DB = {
   URL: ENVIRONMENT === 'development' ? process.env.DEV_DB_URL : process.env.PROD_DB_URL,
   USERNAME: ENVIRONMENT === 'development' ? process.env.DEV_DB_USERNAME : process.env.PROD_DB_USERNAME,
@@ -60,6 +68,7 @@ export {
   ENVIRONMENT,
   CHARACTERS,
   SERVER,
+  EMAIL,
   DB,
   TWO_FAC_AUTH,
   HTML_CONTENT,

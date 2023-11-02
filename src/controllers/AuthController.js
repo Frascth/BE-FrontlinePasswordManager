@@ -219,13 +219,17 @@ class AuthController {
   static async sendMessageWa(request, h) {
     const { to, message } = request.payload;
     await Util.sendWhatsApp(to, message);
-    return Util.response(h, true, 'Success, message sent');
+    return Util.response(h, true, 'Success, message sent', 200);
   }
 
   static async sendMessageEmail(request, h) {
     const { to, subject, message } = request.payload;
-    await Util.sendMail(to, subject, message);
-    return Util.response(h, true, 'Success, email sent');
+    const res = await Util.sendMail(to, subject, message);
+    console.log(res);
+    if (!res.status) {
+      return Util.response(h, false, 'Failed, email not sent', 500, res.info);
+    }
+    return Util.response(h, true, 'Success, email sent', 200);
   }
 
   static async activateAccount(request, h) {
