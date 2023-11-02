@@ -119,7 +119,7 @@ class Util {
 
     // Create an email message
     const mailOptions = {
-      from: 'Frontline <frontline.mailer@gmail.com>',
+      from: EMAIL.NAME,
       to,
       subject,
       text,
