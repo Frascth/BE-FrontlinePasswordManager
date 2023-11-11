@@ -14,7 +14,7 @@ class T3User extends Model {
     let tryCount = 0;
 
     while (isExist && tryCount < 3) {
-      newPk = nanoid(24);
+      newPk = nanoid(21);
       isExist = await T3User.findOne({ where: { pk: newPk } });
       tryCount += 1;
     }

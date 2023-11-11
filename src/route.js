@@ -55,6 +55,11 @@ const prodRoute = [
     path: '/logout',
     handler: AuthController.logout,
   },
+  {
+    method: 'POST',
+    path: '/save-data',
+    handler: SafeStorageController.create,
+  },
 
 ];
 
@@ -77,14 +82,6 @@ if (ENVIRONMENT === 'development') {
       handler: AuthController.sendMessageEmail,
       options: {
         auth: false,
-      },
-    },
-    {
-      method: 'GET',
-      path: '/check-session',
-      handler: SafeStorageController.checkSession,
-      options: {
-        auth: 'session',
       },
     },
   ];

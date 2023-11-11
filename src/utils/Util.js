@@ -12,6 +12,11 @@ import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL } from './constant.js';
 
 class Util {
 
+  static getUserPk(request) {
+    const { pk } = request.auth.credentials;
+    return pk;
+  }
+
   static isCookiePresent(request) {
     if (!request.headers.cookie || !request.headers.cookie.includes(`${SERVER.COOKIE_NAME}=`)) {
       return false;
