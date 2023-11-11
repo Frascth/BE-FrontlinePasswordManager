@@ -1,10 +1,10 @@
-import Util from './utils/Util.js';
+// import Util from './utils/Util.js';
 // import crypto from 'crypto';
 
-const encryptedText = Util.encryptText('k@FW@TAl,axtjnP:Bd1R#7hju.hFov(Z');
-console.log(encryptedText);
-const decryptedText = Util.decryptText(encryptedText);
-console.log(decryptedText);
+// const encryptedText = Util.encryptText('k@FW@TAl,axtjnP:Bd1R#7hju.hFov(Z');
+// console.log(encryptedText);
+// const decryptedText = Util.decryptText(encryptedText);
+// console.log(decryptedText);
 
 // console.log(crypto.randomBytes(16).toString('hex'));
 
