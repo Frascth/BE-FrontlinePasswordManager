@@ -5,6 +5,13 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
+    "cache-1-windows": "rmdir /s /q \".wwebjs_cache\"",
+    "cache-2-windows": "rmdir /s /q \".wwebjs_auth\"",
+    "ccw": "npm run cache-1-windows && npm run cache-2-windows",
+    "cache-1-linux": "rm -r .wwebjs_cache",
+    "cache-2-linux": "rm -r .wwebjs_auth",
+    "ccl": "npm run cache-1-linux && npm run cache-2-linux",
+
     "learn": "node src/learn.js",
     "lint": "eslint src/",
     "dev": "node src/server.js",
