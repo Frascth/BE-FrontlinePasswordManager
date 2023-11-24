@@ -60,6 +60,14 @@ const prodRoute = [
     path: '/save-data',
     handler: SafeStorageController.create,
   },
+  {
+    method: 'GET',
+    path: '/datas',
+    handler: SafeStorageController.getDatas,
+    options: {
+      auth: false,
+    },
+  },
 
 ];
 

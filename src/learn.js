@@ -1,6 +1,16 @@
 // import Util from './utils/Util.js';
 // import crypto from 'crypto';
 
+function isEmptyString(str) {
+  if (str.length === 0 || str.trim() === '') {
+    return true;
+  }
+
+  return false;
+}
+
+console.log(isEmptyString('      '));
+
 // const encryptedText = Util.encryptText('k@FW@TAl,axtjnP:Bd1R#7hju.hFov(Z');
 // console.log(encryptedText);
 // const decryptedText = Util.decryptText(encryptedText);

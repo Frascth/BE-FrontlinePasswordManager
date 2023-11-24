@@ -7,6 +7,7 @@ import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
+import { toLower } from 'lodash';
 import waConn from '../waConnection.js';
 import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL } from './constant.js';
 
@@ -211,6 +212,44 @@ class Util {
 
   static escapeInput(inputString) {
     return escape(inputString);
+  }
+
+  /**
+ * whitespace only considered as empty string
+ * @param {string} str
+ * @returns boolean
+ */
+  static isEmptyString(str) {
+    if (str.length === 0 || str.trim() === '') {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+ * get the minPage and maxPage attribute for pagination
+ * @param {int} totalData
+ * @param {int} limit
+ * @returns minPage and maxPage
+ */
+  static minMaxPagination(totalData, limit) {
+    return {
+      minPage: 1,
+      maxPage: Math.ceil(totalData / limit),
+    };
+  }
+
+  static getSort(str) {
+    if (this.isEmptyString(str)) {
+      return 'asc';
+    }
+
+    str = str.toLowerCase();
+    if (str.includes('asc')) {
+      return 'asc';
+    }
+
+    return 'desc';
   }
 
 }
