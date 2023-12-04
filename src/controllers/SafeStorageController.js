@@ -1,10 +1,8 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable max-len */
-import { toLower } from 'lodash';
 import { sequelizeConn } from '../dbConnection.js';
 import T3SafeStorage from '../models/T3SafeStorage.js';
 import Util from '../utils/Util.js';
-import { SERVER } from '../utils/constant.js';
 
 /* eslint-disable prefer-const */
 class SafeStorageController {
@@ -43,40 +41,48 @@ class SafeStorageController {
     } = request.query;
 
     let needRedirect = false;
-    let redirectUrl = '/datas?';
+    let redirectUrl = '/datas';
     const queryParams = [];
 
-    try {
-      queryParams.push(`search=${search.toLowerCase()}`);
-      // request.query.search = search.toLowerCase();
-      // search = search.toLowerCase();
-    } catch (error) {
-      // request.query.search = undefined;
-      needRedirect = true;
+    if (!Util.isEmptyString(search)) {
+      try {
+        queryParams.push(`search=${search.toLowerCase()}`);
+        // request.query.search = search.toLowerCase();
+        // search = search.toLowerCase();
+      } catch (error) {
+        // request.query.search = undefined;
+        needRedirect = true;
+      }
     }
 
-    try {
-      queryParams.push(`sort-title=${Util.getSort(sortTitle)}`);
-      // request.query['sort-title'] = Util.getSort(sortTitle);
-    } catch (error) {
-      // request.query['sort-title'] = undefined;
-      needRedirect = true;
+    if (!Util.isEmptyString(sortTitle)) {
+      try {
+        queryParams.push(`sort-title=${Util.getSort(sortTitle)}`);
+        // request.query['sort-title'] = Util.getSort(sortTitle);
+      } catch (error) {
+        // request.query['sort-title'] = undefined;
+        needRedirect = true;
+      }
     }
 
-    try {
-      queryParams.push(`sort-website=${Util.getSort(sortWebsite)}`);
-      // request.query['sort-website'] = Util.getSort(sortWebsite);
-    } catch (error) {
-      // request.query['sort-website'] = undefined;
-      needRedirect = true;
+    if (!Util.isEmptyString(sortWebsite)) {
+      try {
+        queryParams.push(`sort-website=${Util.getSort(sortWebsite)}`);
+        // request.query['sort-website'] = Util.getSort(sortWebsite);
+      } catch (error) {
+        // request.query['sort-website'] = undefined;
+        needRedirect = true;
+      }
     }
 
-    try {
-      queryParams.push(`sort-created-at=${Util.getSort(sortCreatedAt)}`);
-      // request.query['sort-created-at'] = Util.getSort(sortCreatedAt);
-    } catch (error) {
-      // request.query['sort-created-at'] = undefined;
-      needRedirect = true;
+    if (!Util.isEmptyString(sortCreatedAt)) {
+      try {
+        queryParams.push(`sort-created-at=${Util.getSort(sortCreatedAt)}`);
+        // request.query['sort-created-at'] = Util.getSort(sortCreatedAt);
+      } catch (error) {
+        // request.query['sort-created-at'] = undefined;
+        needRedirect = true;
+      }
     }
 
     try {
@@ -91,7 +97,7 @@ class SafeStorageController {
       // request.query.limit = limit;
     } catch (error) {
       limit = 10;
-      queryParams.push('limit=10');
+      queryParams.push(`limit=${limit}`);
       // request.query.limit = 10;
       needRedirect = true;
     }
@@ -109,13 +115,15 @@ class SafeStorageController {
       // request.query.page = page;
     } catch (error) {
       page = 1;
-      queryParams.push('page=1');
+      queryParams.push(`page=${page}`);
       // request.query.page = 1;
       needRedirect = true;
     }
 
     if (needRedirect) {
-      redirectUrl += queryParams.join('&');
+      redirectUrl += `?${queryParams.join('&')}`;
+    } else {
+      redirectUrl = request.url.href;
     }
 
     return { needRedirect, redirectUrl };
@@ -155,10 +163,10 @@ class SafeStorageController {
     }
 
     // get some data with query params
-    const { needRedirect, redirectUrl } = this.preprocessRequestQuery(request, h, datas.totalDatas);
-    if (needRedirect) {
-      return h.redirect(redirectUrl).takeover();
-    }
+    const { needRedirect, redirectUrl } = SafeStorageController.preprocessRequestQuery(request, h, datas.totalDatas);
+    // if (needRedirect) {
+    //   return h.redirect(redirectUrl).takeover();
+    // }
 
     let {
       search,
@@ -171,15 +179,16 @@ class SafeStorageController {
 
     const startIndex = (page - 1) * limit;
 
-    datas.datas = await T3SafeStorage.findAll({
-      offset: startIndex,
-      limit,
-      where: { userFk, isDeleted: false },
-      order: [['createdAt', 'DESC']],
-    });
+    // datas.datas = await T3SafeStorage.findAll({
+    //   offset: startIndex,
+    //   limit,
+    //   where: { userFk, isDeleted: false },
+    //   order: [['createdAt', 'DESC']],
+    // });
 
-    datas.datas.forEach((data) => { data.password = Util.decryptText(data.password); });
-    datas.datasCount = datas.datas.length;
+    // datas.datas.forEach((data) => { data.password = Util.decryptText(data.password); });
+    // datas.datasCount = datas.datas.length;
+    datas.datas = { search, sortTitle, sortWebsite, sortCreatedAt, page, limit, needRedirect, redirectUrl };
     return Util.response(h, true, 'Success, get some datas', 200, datas);
   }
 
