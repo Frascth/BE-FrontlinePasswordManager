@@ -240,12 +240,13 @@ class Util {
 
   static getSort(str) {
     str = str.toLowerCase();
+    str = str.trim();
 
-    if (str.includes('asc')) {
+    if (str === 'asc') {
       return 'asc';
     }
 
-    if (str.includes('desc')) {
+    if (str === 'desc') {
       return 'desc';
     }
 

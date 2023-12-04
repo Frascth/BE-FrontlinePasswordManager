@@ -1,11 +1,22 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable max-len */
+import querystring from 'querystring';
 import { sequelizeConn } from '../dbConnection.js';
 import T3SafeStorage from '../models/T3SafeStorage.js';
 import Util from '../utils/Util.js';
 
 /* eslint-disable prefer-const */
 class SafeStorageController {
+
+  static columnForQuery = {
+    search: undefined,
+    page: undefined,
+    limit: undefined,
+    'sort-title': 'title',
+    'sort-website': 'website',
+    'sort-created-at': 'createdAt',
+    'sort-updated-at': 'updatedAt',
+  };
 
   static async create(request, h) {
     const { title, website, username, password } = request.payload;
@@ -31,103 +42,114 @@ class SafeStorageController {
   }
 
   static preprocessRequestQuery(request, h, totalDatas) {
-    let {
-      search,
-      'sort-title': sortTitle,
-      'sort-website': sortWebsite,
-      'sort-created-at': sortCreatedAt,
-      page,
-      limit,
-    } = request.query;
 
+    const sanitizedQuery = {};
     let needRedirect = false;
+
+    // filter for valid keys
+    Object.keys(request.query).forEach((key) => {
+      if (Object.keys(this.columnForQuery).includes(key)) {
+        sanitizedQuery[key] = request.query[key];
+      } else {
+        needRedirect = true;
+      }
+    });
     let redirectUrl = '/datas';
-    const queryParams = [];
 
-    if (!Util.isEmptyString(search)) {
+    if (!Util.isEmptyString(request.query.search)) {
       try {
-        queryParams.push(`search=${search.toLowerCase()}`);
-        // request.query.search = search.toLowerCase();
-        // search = search.toLowerCase();
+        sanitizedQuery.search = request.query.search.toLowerCase();
       } catch (error) {
-        // request.query.search = undefined;
-        needRedirect = true;
-      }
-    }
-
-    if (!Util.isEmptyString(sortTitle)) {
-      try {
-        queryParams.push(`sort-title=${Util.getSort(sortTitle)}`);
-        // request.query['sort-title'] = Util.getSort(sortTitle);
-      } catch (error) {
-        // request.query['sort-title'] = undefined;
-        needRedirect = true;
-      }
-    }
-
-    if (!Util.isEmptyString(sortWebsite)) {
-      try {
-        queryParams.push(`sort-website=${Util.getSort(sortWebsite)}`);
-        // request.query['sort-website'] = Util.getSort(sortWebsite);
-      } catch (error) {
-        // request.query['sort-website'] = undefined;
-        needRedirect = true;
-      }
-    }
-
-    if (!Util.isEmptyString(sortCreatedAt)) {
-      try {
-        queryParams.push(`sort-created-at=${Util.getSort(sortCreatedAt)}`);
-        // request.query['sort-created-at'] = Util.getSort(sortCreatedAt);
-      } catch (error) {
-        // request.query['sort-created-at'] = undefined;
+        delete sanitizedQuery.search;
         needRedirect = true;
       }
     }
 
     try {
-      limit = parseInt(limit, 10);
-      if (isNaN(limit)) {
+      sanitizedQuery.limit = parseInt(request.query.limit, 10);
+      if (isNaN(sanitizedQuery.limit)) {
         throw new Error('Limit must be number');
       }
-      if (limit < 1) {
+      if (sanitizedQuery.limit < 1) {
         throw new Error('Limit must be positive number');
       }
-      queryParams.push(`limit=${limit}`);
-      // request.query.limit = limit;
     } catch (error) {
-      limit = 10;
-      queryParams.push(`limit=${limit}`);
-      // request.query.limit = 10;
+      sanitizedQuery.limit = 10;
       needRedirect = true;
     }
 
     try {
-      page = parseInt(page, 10);
-      const { minPage, maxPage } = Util.minMaxPagination(totalDatas, limit);
-      if (page < minPage) {
+      sanitizedQuery.page = parseInt(request.query.page, 10);
+      const { minPage, maxPage } = Util.minMaxPagination(totalDatas, sanitizedQuery.limit);
+      if (isNaN(sanitizedQuery.page)) {
+        throw new Error('Page must be number');
+      }
+      if (sanitizedQuery.page < minPage) {
         throw new Error('Page must not below the minPage');
       }
-      if (page > maxPage) {
+      if (sanitizedQuery.page > maxPage) {
         throw new Error('Page must not above the maxPage');
       }
-      queryParams.push(`page=${page}`);
-      // request.query.page = page;
     } catch (error) {
-      page = 1;
-      queryParams.push(`page=${page}`);
-      // request.query.page = 1;
+      sanitizedQuery.page = 1;
       needRedirect = true;
+    }
+
+    if (!Util.isEmptyString(request.query['sort-title'])) {
+      try {
+        sanitizedQuery['sort-title'] = Util.getSort(request.query['sort-title']);
+      } catch (error) {
+        delete sanitizedQuery['sort-title'];
+        needRedirect = true;
+      }
+    }
+
+    if (!Util.isEmptyString(request.query['sort-website'])) {
+      try {
+        sanitizedQuery['sort-website'] = Util.getSort(request.query['sort-website']);
+      } catch (error) {
+        delete sanitizedQuery['sort-website'];
+        needRedirect = true;
+      }
+    }
+
+    if (!Util.isEmptyString(request.query['sort-created-at'])) {
+      try {
+        sanitizedQuery['sort-created-at'] = Util.getSort(request.query['sort-created-at']);
+      } catch (error) {
+        delete sanitizedQuery['sort-created-at'];
+        needRedirect = true;
+      }
+    }
+
+    if (!Util.isEmptyString(request.query['sort-updated-at'])) {
+      try {
+        sanitizedQuery['sort-updated-at'] = Util.getSort(request.query['sort-updated-at']);
+      } catch (error) {
+        delete sanitizedQuery['sort-updated-at'];
+        needRedirect = true;
+      }
     }
 
     if (needRedirect) {
-      redirectUrl += `?${queryParams.join('&')}`;
+      redirectUrl += `?${querystring.stringify(sanitizedQuery)}`;
     } else {
       redirectUrl = request.url.href;
     }
 
     return { needRedirect, redirectUrl };
 
+  }
+
+  static getListSequelizeOrder(request) {
+    const order = [];
+    Object.keys(request.query).forEach((key) => {
+      if (Object.keys(this.columnForQuery).includes(key) && this.columnForQuery[key] !== undefined) {
+        order.push([this.columnForQuery[key], request.query[key].toUpperCase()]);
+      }
+    });
+
+    return order;
   }
 
   static async getDatas(request, h) {
@@ -163,32 +185,31 @@ class SafeStorageController {
     }
 
     // get some data with query params
-    const { needRedirect, redirectUrl } = SafeStorageController.preprocessRequestQuery(request, h, datas.totalDatas);
-    // if (needRedirect) {
-    //   return h.redirect(redirectUrl).takeover();
-    // }
+    const { needRedirect, redirectUrl } = SafeStorageController.preprocessRequestQuery(request, h, datas.total);
+    if (needRedirect) {
+      return h.redirect(redirectUrl).takeover();
+    }
 
     let {
-      search,
-      'sort-title': sortTitle,
-      'sort-website': sortWebsite,
-      'sort-created-at': sortCreatedAt,
       page,
       limit,
     } = request.query;
 
+    ({ minPage: datas.minPage, maxPage: datas.maxPage } = Util.minMaxPagination(datas.total, limit));
+
     const startIndex = (page - 1) * limit;
 
-    // datas.datas = await T3SafeStorage.findAll({
-    //   offset: startIndex,
-    //   limit,
-    //   where: { userFk, isDeleted: false },
-    //   order: [['createdAt', 'DESC']],
-    // });
+    const orderList = SafeStorageController.getListSequelizeOrder(request);
 
-    // datas.datas.forEach((data) => { data.password = Util.decryptText(data.password); });
-    // datas.datasCount = datas.datas.length;
-    datas.datas = { search, sortTitle, sortWebsite, sortCreatedAt, page, limit, needRedirect, redirectUrl };
+    datas.datas = await T3SafeStorage.findAll({
+      offset: startIndex,
+      limit,
+      where: { userFk, isDeleted: false },
+      order: orderList,
+    });
+
+    datas.datas.forEach((data) => { data.password = Util.decryptText(data.password); });
+    datas.datasCount = datas.datas.length;
     return Util.response(h, true, 'Success, get some datas', 200, datas);
   }
 
