@@ -2,6 +2,7 @@
 import qr from 'qrcode-terminal';
 import Whatsapp from 'whatsapp-web.js';
 import { ADMIN_WA_NO } from './utils/constant.js';
+import logger from './logger.js';
 
 const { Client, LocalAuth } = Whatsapp;
 
@@ -22,9 +23,11 @@ waConn.on('ready', async () => {
   to += '@c.us';
   const isRegistered = await waConn.isRegisteredUser(to);
   if (!isRegistered) {
-    console.log('WhatsApp number is not registered');
-    console.log('WhatsApp connection is ready!');
+    console.log('Admin WhatsApp number is not registered');
+    logger.info('Admin WhatsApp number is not registered');
   }
+  console.log('WhatsApp connection is ready!');
+  logger.info('WhatsApp connection is ready!');
   await waConn.sendMessage(to, 'WhatsApp connection for Frontline is ready!');
 });
 

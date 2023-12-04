@@ -8,6 +8,7 @@ import { applyModelsAssociation, defineAllModel, syncModelWithDb } from './model
 import waConn from './waConnection.js';
 import AuthController from './controllers/AuthController.js';
 import initCron from './cron.js';
+import logger from './logger.js';
 
 async function init() {
   // check auth db connection
@@ -63,6 +64,7 @@ async function init() {
   // start server
   await server.start();
   console.log(`Server running on ${server.info.uri}`);
+  logger.info(`Server running on ${server.info.uri}`);
 
   // init cron
   initCron();

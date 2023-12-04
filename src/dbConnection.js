@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { Sequelize } from 'sequelize';
 import { DB } from './utils/constant.js';
+import logger from './logger.js';
 
 const sequelizeConn = new Sequelize({
   database: DB.NAME,
@@ -15,14 +16,17 @@ const sequelizeConn = new Sequelize({
     },
   },
   dialect: 'postgres',
+  logging: (msg) => logger.info(msg),
 });
 
 async function initDatabase() {
   try {
     await sequelizeConn.authenticate();
     console.log('Database connection has been established successfully.');
+    logger.info('Database connection has been established successfully.');
   } catch (error) {
     console.error('Unable to connect to the database:', error);
+    logger.error(`Unable to connect to the database: ${error}`);
   }
 }
 

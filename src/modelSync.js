@@ -5,6 +5,7 @@ import T3Otp from './models/T3Otp.js';
 import T3SafeStorage from './models/T3SafeStorage.js';
 import T1HtmlContent from './models/T1HtmlContent.js';
 import T1MessageContent from './models/T1MessageContent.js';
+import logger from './logger.js';
 
 /**
  * callint a Model.init and add all model to sequelizeConn.models
@@ -49,6 +50,7 @@ function applyModelsAssociation() {
 async function syncModelWithDb() {
   await sequelizeConn.sync();
   console.log('Success sync with database');
+  logger.info('Success sync with database');
 }
 
 export { defineAllModel, applyModelsAssociation, syncModelWithDb };

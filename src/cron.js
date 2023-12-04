@@ -3,6 +3,7 @@ import { Op, literal } from 'sequelize';
 import { scheduleJob } from 'node-schedule';
 import T3User from './models/T3User.js';
 import { USER_AUTH_STATE } from './utils/constant.js';
+import logger from './logger.js';
 
 async function resetAuthState() {
   // run once every server start / restart
@@ -27,6 +28,7 @@ async function resetAuthState() {
 
   await Promise.all(updatePromise.map((asyncFunc) => asyncFunc()));
   console.log('resetAuthState once every server start/restart done');
+  logger.info('resetAuthState once every server start/restart done');
 
 }
 
@@ -56,6 +58,7 @@ async function resetSession() {
 
   await Promise.all(updatePromise.map((asyncFunc) => asyncFunc()));
   console.log('resetSession every 1 minutes done');
+  logger.info('resetSession every 1 minutes done');
 }
 
 function initCron() {

@@ -7,7 +7,6 @@ import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
-import { toLower } from 'lodash';
 import waConn from '../waConnection.js';
 import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL } from './constant.js';
 
@@ -220,7 +219,7 @@ class Util {
  * @returns boolean
  */
   static isEmptyString(str) {
-    if (str.length === 0 || str.trim() === '') {
+    if (str === undefined || str.length === 0 || str.trim() === '') {
       return true;
     }
     return false;
@@ -240,16 +239,17 @@ class Util {
   }
 
   static getSort(str) {
-    if (this.isEmptyString(str)) {
-      return 'asc';
-    }
-
     str = str.toLowerCase();
+
     if (str.includes('asc')) {
       return 'asc';
     }
 
-    return 'desc';
+    if (str.includes('desc')) {
+      return 'desc';
+    }
+
+    throw new Error('Sort text must be asc or desc');
   }
 
 }

@@ -11,7 +11,6 @@
     "cache-1-linux": "rm -r .wwebjs_cache",
     "cache-2-linux": "rm -r .wwebjs_auth",
     "ccl": "npm run cache-1-linux && npm run cache-2-linux",
-
     "learn": "node src/learn.js",
     "lint": "eslint src/",
     "dev": "node src/server.js",
@@ -36,7 +35,9 @@
     "qrcode-terminal": "^0.12.0",
     "sequelize": "^6.33.0",
     "uuid": "^9.0.1",
-    "whatsapp-web.js": "^1.23.0"
+    "whatsapp-web.js": "^1.23.0",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^4.7.1"
   },
   "devDependencies": {
     "eslint": "^8.52.0",
