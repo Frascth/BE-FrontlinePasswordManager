@@ -67,7 +67,7 @@ class Util {
     return new Date(pgTz);
   }
 
-  static isDateAboveInterval(datetime1, datetime2, interval, format = 'minutes') {
+  static isTimeEqualorAboveInterval(datetime1, datetime2, interval, format = 'minutes') {
     datetime1 = new Date(datetime1);
     datetime2 = new Date(datetime2);
     const timeDifferenceInSeconds = Math.abs(Math.floor((datetime1 - datetime2) / 1000));
