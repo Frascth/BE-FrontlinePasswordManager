@@ -80,8 +80,11 @@ async function init() {
       response.output.payload = {
         statusCode: error.output.statusCode,
         error: ENVIRONMENT === 'development' ? error : error.message,
-        message: 'An error occurred',
+        message: ENVIRONMENT === 'development' ? error.message : 'An error occurred',
       };
+
+      // log the error
+      logger.error(error.message);
     }
     return h.continue;
   });
