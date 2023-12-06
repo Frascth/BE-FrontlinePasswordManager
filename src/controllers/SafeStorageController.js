@@ -154,8 +154,8 @@ class SafeStorageController {
   }
 
   static async getDatas(request, h) {
-    // const userFk = Util.getUserPk(request);
-    const userFk = 'e0naCzvo7L4KlrlGWYE-z';
+    const userFk = Util.getUserPk(request);
+    // const userFk = 'e0naCzvo7L4KlrlGWYE-z';
 
     const isRedirected = !Util.isEmptyString(request.info.referrer);
     let datas = {
