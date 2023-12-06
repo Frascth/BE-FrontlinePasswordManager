@@ -64,7 +64,7 @@ class AuthController {
     request.payload.userPk = user.pk;
     const resultSendOtp = await AuthController.sendOtp(request, h);
     if (resultSendOtp.statusCode === HTTP_CODE.TOO_MANY_REQUEST) {
-      return Util.response(h, true, `Success, login success otp has been sent ${resultSendOtp.source.data.lastOtpSentAt} ${COOLDOWN.OTP.FORMAT} ago ${resultSendOtp.source.data.lastOtpSentAts} second`, 200);
+      return Util.response(h, true, `Success, login success otp has been sent ${resultSendOtp.source.data.lastOtpSentAt} ${COOLDOWN.OTP.FORMAT} ago`, 200);
     }
 
     // user.authState = USER_AUTH_STATE.IN_OTP;
@@ -204,11 +204,10 @@ class AuthController {
     const lastTimeOtp = otp ? otp.createdAt : false;
 
     if (lastTimeOtp) {
-      const isTooMany = Util.isDateAboveInterval(lastTimeOtp, new Date(), 3, COOLDOWN.OTP.FORMAT);
+      const isTooMany = Util.isTimeEqualorAboveInterval(lastTimeOtp, new Date(), 3, COOLDOWN.OTP.FORMAT);
       if (!isTooMany) {
         const data = {
           lastOtpSentAt: Util.getInterval(lastTimeOtp, new Date(), COOLDOWN.OTP.FORMAT),
-          lastOtpSentAts: Util.getInterval(lastTimeOtp, new Date(), 'second'),
         };
         return Util.response(h, false, `Failed, please wait ${COOLDOWN.OTP.TIME} ${COOLDOWN.OTP.FORMAT} to request otp`, HTTP_CODE.TOO_MANY_REQUEST, data);
       }
@@ -249,7 +248,7 @@ class AuthController {
       return Util.response(h, false, 'Failed, user not found', 404);
     }
 
-    const isExpired = Util.isDateAboveInterval(user.updatedAt, Util.getUTCDateNow(), 3, 'day');
+    const isExpired = Util.isTimeEqualorAboveInterval(user.updatedAt, Util.getUTCDateNow(), 3, 'day');
     if (isExpired) {
       await user.updateActivationLink();
       await user.getActivationLinkEmail();
