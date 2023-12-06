@@ -70,27 +70,59 @@ class Util {
   static isDateAboveInterval(datetime1, datetime2, interval, format = 'minutes') {
     datetime1 = new Date(datetime1);
     datetime2 = new Date(datetime2);
-    const timeDifferenceInMilliseconds = datetime1 - datetime2;
+    const timeDifferenceInSeconds = Math.abs(Math.floor((datetime1 - datetime2) / 1000));
     let differenceInFormat;
 
     switch (format) {
+      case 'second':
+      case 'seconds':
+        differenceInFormat = timeDifferenceInSeconds;
+        break;
       case 'minute':
       case 'minutes':
-        differenceInFormat = Math.abs(Math.floor(timeDifferenceInMilliseconds / 60000));
+        differenceInFormat = Math.abs(Math.floor(timeDifferenceInSeconds / 60));
         break;
       case 'hour':
       case 'hours':
-        differenceInFormat = Math.abs(Math.floor(timeDifferenceInMilliseconds / 3600000));
+        differenceInFormat = Math.abs(Math.floor(timeDifferenceInSeconds / 3600));
         break;
       case 'day':
       case 'days':
-        differenceInFormat = Math.abs(Math.floor(timeDifferenceInMilliseconds / 86400000));
+        differenceInFormat = Math.abs(Math.floor(timeDifferenceInSeconds / 86400));
         break;
       default:
-        throw new Error('Invalid time unit. Use "minutes", "hour", or "day".');
+        throw new Error('Invalid time unit. Use "second", "minute", "hour", or "day".');
     }
+    return (differenceInFormat >= interval);
+  }
 
-    return (differenceInFormat > interval);
+  static getInterval(datetime1, datetime2, format = 'minutes') {
+    datetime1 = new Date(datetime1);
+    datetime2 = new Date(datetime2);
+    const timeDifferenceInSeconds = Math.abs(Math.floor((datetime1 - datetime2) / 1000));
+    let differenceInFormat;
+
+    switch (format) {
+      case 'second':
+      case 'seconds':
+        differenceInFormat = timeDifferenceInSeconds;
+        break;
+      case 'minute':
+      case 'minutes':
+        differenceInFormat = Math.abs(Math.floor(timeDifferenceInSeconds / 60));
+        break;
+      case 'hour':
+      case 'hours':
+        differenceInFormat = Math.abs(Math.floor(timeDifferenceInSeconds / 3600));
+        break;
+      case 'day':
+      case 'days':
+        differenceInFormat = Math.abs(Math.floor(timeDifferenceInSeconds / 86400));
+        break;
+      default:
+        throw new Error('Invalid time unit. Use "second", "minute", "hour", or "day".');
+    }
+    return differenceInFormat;
 
   }
 

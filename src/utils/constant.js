@@ -65,6 +65,21 @@ const USER_STATUS = {
   ACTIVE: 'ACTIVE',
 };
 
+const COOLDOWN = {
+  OTP: { TIME: 3, FORMAT: 'minutes' },
+};
+
+const HTTP_CODE = {
+  OK: 200,
+  CREATED: 201,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  UNAUTHENTICATED: 401,
+  FORBIDEN: 403,
+  NOT_FOUND: 404,
+  TOO_MANY_REQUEST: 429,
+};
+
 export {
   ENVIRONMENT,
   CHARACTERS,
@@ -78,4 +93,6 @@ export {
   USER_AUTH_STATE,
   USER_STATUS,
   ROUTE,
+  COOLDOWN,
+  HTTP_CODE,
 };

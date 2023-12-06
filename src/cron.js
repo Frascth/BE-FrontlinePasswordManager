@@ -62,8 +62,8 @@ async function resetSession() {
 }
 
 function initCron() {
-  resetAuthState();
-  scheduleJob('0/1 * * * *', resetSession);
+  // resetAuthState();
+  // scheduleJob('0/1 * * * *', resetSession);
 }
 
 export default initCron;

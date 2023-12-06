@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable max-len */
-import { Op, where } from 'sequelize';
+import { Op } from 'sequelize';
 import querystring from 'querystring';
 import { sequelizeConn } from '../dbConnection.js';
 import T3SafeStorage from '../models/T3SafeStorage.js';

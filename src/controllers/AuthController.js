@@ -1,24 +1,28 @@
+/* eslint-disable eqeqeq */
 /* eslint-disable max-len */
 /* eslint-disable prefer-const */
 import { Op } from 'sequelize';
 import T3Otp from '../models/T3Otp.js';
 import T3User from '../models/T3User.js';
 import Util from '../utils/Util.js';
-import { TWO_FAC_AUTH, USER_AUTH_STATE, USER_STATUS, ROUTE } from '../utils/constant.js';
+import { COOLDOWN, HTTP_CODE, TWO_FAC_AUTH, USER_STATUS } from '../utils/constant.js';
 
 class AuthController {
 
   static async logout(request, h) {
     const { pk } = request.auth.credentials;
+    // const user = await T3User.findOne({
+    //   where: { pk, isDeleted: false, authState: USER_AUTH_STATE.LOGIN },
+    // });
     const user = await T3User.findOne({
-      where: { pk, isDeleted: false, authState: USER_AUTH_STATE.LOGIN },
+      where: { pk, isDeleted: false },
     });
 
     if (!user) {
       return Util.response(h, false, 'Failed, user login not found', 404);
     }
 
-    user.authState = USER_AUTH_STATE.LOGOUT;
+    // user.authState = USER_AUTH_STATE.LOGOUT;
     await user.save();
     request.cookieAuth.clear();
     return Util.response(h, true, 'Success, logout', 200);
@@ -53,17 +57,17 @@ class AuthController {
       return Util.response(h, false, 'Failed, unauthorized', 401);
     }
 
-    if (user.authState === USER_AUTH_STATE.LOGIN && Util.isCookiePresent(request)) {
-      return Util.response(h, false, 'Failed, user already login', 401);
-    }
+    // if (user.authState === USER_AUTH_STATE.LOGIN && Util.isCookiePresent(request)) {
+    //   return Util.response(h, false, 'Failed, user already login', 401);
+    // }
 
     request.payload.userPk = user.pk;
     const resultSendOtp = await AuthController.sendOtp(request, h);
-    if (!resultSendOtp.source.status) {
-      return resultSendOtp;
+    if (resultSendOtp.statusCode === HTTP_CODE.TOO_MANY_REQUEST) {
+      return Util.response(h, true, `Success, login success otp has been sent ${resultSendOtp.source.data.lastOtpSentAt} ${COOLDOWN.OTP.FORMAT} ago ${resultSendOtp.source.data.lastOtpSentAts} second`, 200);
     }
 
-    user.authState = USER_AUTH_STATE.IN_OTP;
+    // user.authState = USER_AUTH_STATE.IN_OTP;
     await user.save();
 
     return Util.response(h, true, 'Success, login success', 200);
@@ -117,14 +121,15 @@ class AuthController {
       return Util.response(h, false, 'Failed, unauthorized', 401);
     }
 
-    if (user.authState === USER_AUTH_STATE.LOGIN && Util.isCookiePresent(request)) {
-      return Util.response(h, false, 'Failed, user already login', 401);
-    }
+    // if (user.authState === USER_AUTH_STATE.LOGIN && Util.isCookiePresent(request)) {
+    //   return Util.response(h, false, 'Failed, user already login', 401);
+    // }
 
-    if (user.authState !== USER_AUTH_STATE.IN_OTP) {
-      return Util.response(h, false, 'Failed, otp session expired please re-login', 401);
-    }
+    // if (user.authState !== USER_AUTH_STATE.IN_OTP) {
+    //   return Util.response(h, false, 'Failed, otp session expired please re-login', 401);
+    // }
 
+    // check if otp match
     const threeMinutesAgo = new Date(Util.getUTCDateNow() - 3 * 60 * 1000);
 
     const otp = await T3Otp.findOne({
@@ -150,7 +155,7 @@ class AuthController {
 
     otp.isApprov = true;
     await otp.save();
-    user.authState = USER_AUTH_STATE.LOGIN;
+    // user.authState = USER_AUTH_STATE.LOGIN;
     user.lastLoginTime = Util.getUTCDateNow();
     await user.save();
 
@@ -183,13 +188,13 @@ class AuthController {
       return Util.response(h, false, 'Failed, unauthorized', 401);
     }
 
-    if (user.authState === USER_AUTH_STATE.LOGIN && Util.isCookiePresent(request)) {
-      return Util.response(h, false, 'Failed, user already login', 401);
-    }
+    // if (user.authState === USER_AUTH_STATE.LOGIN && Util.isCookiePresent(request)) {
+    //   return Util.response(h, false, 'Failed, user already login', 401);
+    // }
 
-    if (user.authState !== USER_AUTH_STATE.IN_OTP && request.url.pathname !== ROUTE.LOGIN) {
-      return Util.response(h, false, 'Failed, session expired please re-login', 401);
-    }
+    // if (user.authState !== USER_AUTH_STATE.IN_OTP && request.url.pathname !== ROUTE.LOGIN) {
+    //   return Util.response(h, false, 'Failed, session expired please re-login', 401);
+    // }
 
     const otp = await T3Otp.findOne({
       where: { userFk: user.pk, isApprov: false },
@@ -199,9 +204,13 @@ class AuthController {
     const lastTimeOtp = otp ? otp.createdAt : false;
 
     if (lastTimeOtp) {
-      const isValidRequest = Util.isDateAboveInterval(lastTimeOtp, new Date(), 3, 'minutes');
-      if (!isValidRequest) {
-        return Util.response(h, false, 'Failed, please wait for 3 minutes to request again', 429);
+      const isTooMany = Util.isDateAboveInterval(lastTimeOtp, new Date(), 3, COOLDOWN.OTP.FORMAT);
+      if (!isTooMany) {
+        const data = {
+          lastOtpSentAt: Util.getInterval(lastTimeOtp, new Date(), COOLDOWN.OTP.FORMAT),
+          lastOtpSentAts: Util.getInterval(lastTimeOtp, new Date(), 'second'),
+        };
+        return Util.response(h, false, `Failed, please wait ${COOLDOWN.OTP.TIME} ${COOLDOWN.OTP.FORMAT} to request otp`, HTTP_CODE.TOO_MANY_REQUEST, data);
       }
     }
 
