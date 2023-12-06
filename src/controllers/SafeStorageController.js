@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable max-len */
+import { Op, where } from 'sequelize';
 import querystring from 'querystring';
 import { sequelizeConn } from '../dbConnection.js';
 import T3SafeStorage from '../models/T3SafeStorage.js';
@@ -48,17 +49,17 @@ class SafeStorageController {
 
     // filter for valid keys
     Object.keys(request.query).forEach((key) => {
-      if (Object.keys(this.columnForQuery).includes(key)) {
-        sanitizedQuery[key] = request.query[key];
+      if (Object.keys(this.columnForQuery).includes(key.toLowerCase())) {
+        sanitizedQuery[key.toLowerCase()] = request.query[key];
       } else {
         needRedirect = true;
       }
     });
     let redirectUrl = '/datas';
 
-    if (!Util.isEmptyString(request.query.search)) {
+    if (!Util.isEmptyString(sanitizedQuery.search)) {
       try {
-        sanitizedQuery.search = request.query.search.toLowerCase();
+        sanitizedQuery.search = sanitizedQuery.search.toLowerCase();
       } catch (error) {
         delete sanitizedQuery.search;
         needRedirect = true;
@@ -95,36 +96,36 @@ class SafeStorageController {
       needRedirect = true;
     }
 
-    if (!Util.isEmptyString(request.query['sort-title'])) {
+    if (!Util.isEmptyString(sanitizedQuery['sort-title'])) {
       try {
-        sanitizedQuery['sort-title'] = Util.getSort(request.query['sort-title']);
+        sanitizedQuery['sort-title'] = Util.getSort(sanitizedQuery['sort-title']);
       } catch (error) {
         delete sanitizedQuery['sort-title'];
         needRedirect = true;
       }
     }
 
-    if (!Util.isEmptyString(request.query['sort-website'])) {
+    if (!Util.isEmptyString(sanitizedQuery['sort-website'])) {
       try {
-        sanitizedQuery['sort-website'] = Util.getSort(request.query['sort-website']);
+        sanitizedQuery['sort-website'] = Util.getSort(sanitizedQuery['sort-website']);
       } catch (error) {
         delete sanitizedQuery['sort-website'];
         needRedirect = true;
       }
     }
 
-    if (!Util.isEmptyString(request.query['sort-created-at'])) {
+    if (!Util.isEmptyString(sanitizedQuery['sort-created-at'])) {
       try {
-        sanitizedQuery['sort-created-at'] = Util.getSort(request.query['sort-created-at']);
+        sanitizedQuery['sort-created-at'] = Util.getSort(sanitizedQuery['sort-created-at']);
       } catch (error) {
         delete sanitizedQuery['sort-created-at'];
         needRedirect = true;
       }
     }
 
-    if (!Util.isEmptyString(request.query['sort-updated-at'])) {
+    if (!Util.isEmptyString(sanitizedQuery['sort-updated-at'])) {
       try {
-        sanitizedQuery['sort-updated-at'] = Util.getSort(request.query['sort-updated-at']);
+        sanitizedQuery['sort-updated-at'] = Util.getSort(sanitizedQuery['sort-updated-at']);
       } catch (error) {
         delete sanitizedQuery['sort-updated-at'];
         needRedirect = true;
@@ -141,7 +142,7 @@ class SafeStorageController {
 
   }
 
-  static getListSequelizeOrder(request) {
+  static getListOrderSequelize(request) {
     const order = [];
     Object.keys(request.query).forEach((key) => {
       if (Object.keys(this.columnForQuery).includes(key) && this.columnForQuery[key] !== undefined) {
@@ -191,6 +192,7 @@ class SafeStorageController {
     }
 
     let {
+      search,
       page,
       limit,
     } = request.query;
@@ -198,14 +200,24 @@ class SafeStorageController {
     ({ minPage: datas.minPage, maxPage: datas.maxPage } = Util.minMaxPagination(datas.total, limit));
 
     const startIndex = (page - 1) * limit;
+    const whereCondition = {
+      userFk,
+      isDeleted: false,
+    };
 
-    const orderList = SafeStorageController.getListSequelizeOrder(request);
+    if (!Util.isEmptyString(search)) {
+      whereCondition[Op.or] = [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { website: { [Op.iLike]: `%${search}%` } },
+        { username: { [Op.iLike]: `%${search}%` } },
+      ];
+    }
 
     datas.datas = await T3SafeStorage.findAll({
       offset: startIndex,
       limit,
-      where: { userFk, isDeleted: false },
-      order: orderList,
+      where: whereCondition,
+      order: SafeStorageController.getListOrderSequelize(request),
     });
 
     datas.datas.forEach((data) => { data.password = Util.decryptText(data.password); });
