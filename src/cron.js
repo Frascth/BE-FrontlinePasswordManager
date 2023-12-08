@@ -1,11 +1,13 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable quotes */
 import { Op, literal } from 'sequelize';
 import { scheduleJob } from 'node-schedule';
 import T3User from './models/T3User.js';
 import { USER_AUTH_STATE } from './utils/constant.js';
 import logger from './logger.js';
+import Util from './utils/Util.js';
 
-async function resetAuthState() {
+async function a() {
   // run once every server start / restart
   const updatePromise = [];
   const users = await T3User.findAll({
@@ -32,7 +34,7 @@ async function resetAuthState() {
 
 }
 
-async function resetSession() {
+async function b() {
   // every 1 minutes
   // check if user already in otp or in login session for 30 or more minutes, then logout
 
@@ -61,9 +63,35 @@ async function resetSession() {
   logger.info('resetSession every 1 minutes done');
 }
 
-function initCron() {
-  // resetAuthState();
-  // scheduleJob('0/1 * * * *', resetSession);
+async function resetSession(sessionSalt) {
+  // Calculate the date and time for 30 minutes from now
+  const scheduledDate = new Date(Util.getDatetime().getTime() + 30 * 60 * 1000);
+
+  // Schedule the reset session job
+  scheduleJob(scheduledDate, async () => {
+    const user = await T3User.findOne({ where: {
+      sessionSalt,
+      isDeleted: false,
+    },
+    });
+
+    if (user) {
+      user.sessionId = null;
+      user.sessionExpires = null;
+      user.sessionSalt = null;
+      await user.save();
+    }
+  });
+
+  logger.info(`resetSession(${sessionSalt}), scheduled to run at: ${scheduledDate}`);
 }
 
-export default initCron;
+function initCron() {
+  // a();
+  // scheduleJob('0/1 * * * *', b);
+}
+
+export {
+  initCron,
+  resetSession,
+};

@@ -6,7 +6,7 @@ import route from './route.js';
 import { initDatabase } from './dbConnection.js';
 import { applyModelsAssociation, defineAllModel, syncModelWithDb } from './modelSync.js';
 import waConn from './waConnection.js';
-import initCron from './cron.js';
+import { initCron } from './cron.js';
 import logger from './logger.js';
 import AuthController from './controllers/AuthController.js';
 

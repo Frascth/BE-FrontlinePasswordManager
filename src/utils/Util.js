@@ -2,13 +2,14 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-shadow */
 import crypto from 'crypto';
+import moment from 'moment-timezone';
 import bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import waConn from '../waConnection.js';
-import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL } from './constant.js';
+import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL, GLOBAL_SETTING } from './constant.js';
 
 class Util {
 
@@ -47,6 +48,12 @@ class Util {
       randomNumber.push(crypto.randomInt(0, 10));
     }
     return randomNumber.join('');
+  }
+
+  static getDatetime(timezone = GLOBAL_SETTING.TIMEZONE) {
+    const momentTimezone = moment.tz(timezone);
+    const jsTimezone = momentTimezone.toDate();
+    return jsTimezone;
   }
 
   static async sendWhatsApp(to, message) {
