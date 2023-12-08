@@ -59,12 +59,15 @@ class Util {
 
   }
 
-  static getUTCDateNow() {
-    return new Date(new Date().toISOString());
-  }
-
-  static pgTzToUTCDatetime(pgTz = '2000-12-31T23:59:59.999Z') {
-    return new Date(pgTz);
+  /**
+ *
+ * @param {datetime} datetime
+ * @param {int} surplusBy in second
+ * @returns datetime
+ */
+  static surplusDate(datetime, surplusBy) {
+    datetime = new Date(datetime);
+    return new Date(datetime.getTime() + surplusBy * 1000);
   }
 
   static isTimeEqualorAboveInterval(datetime1, datetime2, interval, format = 'minutes') {
@@ -197,10 +200,10 @@ class Util {
     return response;
   }
 
-  static async hashText(plainPassword) {
+  static async hashText(plainText, salt = undefined) {
     try {
-      const salt = await bcrypt.genSalt(10);
-      const hashedText = await bcrypt.hash(plainPassword, salt);
+      salt = salt || await bcrypt.genSalt(10);
+      const hashedText = await bcrypt.hash(plainText, salt);
       return { salt, hashedText };
     } catch (err) {
       // Handle any errors

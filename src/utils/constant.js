@@ -23,6 +23,16 @@ const SERVER = {
   LOG_PATH: './log',
 };
 
+const FE_SERVER = {
+  HOST: ENVIRONMENT === 'development' ? process.env.DEV_SERVER_HOST : process.env.PROD_SERVER_HOST,
+  PORT: ENVIRONMENT === 'development' ? process.env.DEV_SERVER_PORT : process.env.PROD_SERVER_PORT,
+  COOKIE_NAME: process.env.COOKIE_NAME,
+  COOKIE_PASSWORD: process.env.COOKIE_PASSWORD,
+  ENCRYPTION_KEY_HEX: process.env.COOKIE_ENCRYPTION_KEY_HEX,
+  INITIAL_VECTOR_HEX: process.env.COOKIE_INITIAL_VECTOR_HEX,
+  LOG_PATH: './log',
+};
+
 const EMAIL = {
   HOST: ENVIRONMENT === 'development' ? process.env.DEV_EMAIL_HOST : process.env.PROD_EMAIL_HOST,
   PORT: ENVIRONMENT === 'development' ? process.env.DEV_EMAIL_PORT : process.env.PROD_EMAIL_PORT,
@@ -80,6 +90,10 @@ const HTTP_CODE = {
   TOO_MANY_REQUEST: 429,
 };
 
+const GLOBAL_SETTING = {
+  TIMEZONE: process.env.GLOBAL_TIMEZONE,
+};
+
 export {
   ENVIRONMENT,
   CHARACTERS,
@@ -95,4 +109,6 @@ export {
   ROUTE,
   COOLDOWN,
   HTTP_CODE,
+  FE_SERVER,
+  GLOBAL_SETTING,
 };

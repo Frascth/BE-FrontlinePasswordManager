@@ -114,6 +114,16 @@ T3User.init({
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  sessionId: {
+    type: DataTypes.STRING(4000),
+  },
+  sessionSalt: {
+    type: DataTypes.STRING(4000),
+  },
+  sessionExpires: {
+    type: DataTypes.DATE,
+    defaultValue: null,
+  },
 }, {
   sequelize: sequelizeConn,
   modelName: 'T3User',

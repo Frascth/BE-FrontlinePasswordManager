@@ -23,6 +23,9 @@ class AuthController {
     }
 
     // user.authState = USER_AUTH_STATE.LOGOUT;
+    user.sessionId = null;
+    user.sessionExpires = null;
+    user.sessionSalt = null;
     await user.save();
     request.cookieAuth.clear();
     return Util.response(h, true, 'Success, logout', 200);
@@ -81,12 +84,26 @@ class AuthController {
    * @returns
    */
   static async validateCookie(request, session) {
-    const user = await T3User.findOne({ where: { pk: Util.decryptText(session.id) } });
+    const user = await T3User.findOne({ where: {
+      sessionSalt: session.sessionSalt,
+      isDeleted: false,
+      sessionExpires: {
+        [Op.gt]: new Date(),
+      },
+    },
+    logging: console.log,
+    });
+
     if (!user) {
-      return { isValid: false };
+      return { isValid: false, credentials: null };
     }
 
-    return { isValid: true, credentials: user };
+    const valid = await Util.compareHash(session.id, user.sessionId);
+    if (!valid) {
+      return { isValid: false, credentials: null };
+    }
+
+    return { isValid: true, credentials: { pk: user.pk } };
   }
 
   static async loginConfirmOtp(request, h) {
@@ -130,7 +147,7 @@ class AuthController {
     // }
 
     // check if otp match
-    const threeMinutesAgo = new Date(Util.getUTCDateNow() - 3 * 60 * 1000);
+    const threeMinutesAgo = new Date(new Date().getTime() - 3 * 60 * 1000);
 
     const otp = await T3Otp.findOne({
       where: {
@@ -156,11 +173,19 @@ class AuthController {
     otp.isApprov = true;
     await otp.save();
     // user.authState = USER_AUTH_STATE.LOGIN;
-    user.lastLoginTime = Util.getUTCDateNow();
+    user.lastLoginTime = new Date().toISOString();
+    // cookie defining
+    const sessionId = Util.generateRandomString(30);
+    const sessionSalt = Util.generateRandomString(30);
+
+    // session defining
+    const { hashedText: hashedSessionId } = await Util.hashText(sessionId);
+    user.sessionId = hashedSessionId;
+    user.sessionExpires = Util.surplusDate(new Date(), 30 * 60).toISOString();
+    user.sessionSalt = sessionSalt;
     await user.save();
 
-    // cookie defining
-    request.cookieAuth.set({ id: Util.encryptText(user.pk) });
+    request.cookieAuth.set({ id: sessionId, sessionSalt });
     return Util.response(h, true, 'Success, login confirmed', 200);
 
   }
@@ -248,7 +273,7 @@ class AuthController {
       return Util.response(h, false, 'Failed, user not found', 404);
     }
 
-    const isExpired = Util.isTimeEqualorAboveInterval(user.updatedAt, Util.getUTCDateNow(), 3, 'day');
+    const isExpired = Util.isTimeEqualorAboveInterval(user.updatedAt, new Date(), 3, 'day');
     if (isExpired) {
       await user.updateActivationLink();
       await user.getActivationLinkEmail();

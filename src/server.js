@@ -1,14 +1,14 @@
 /* eslint-disable no-console */
 import hapi from '@hapi/hapi';
 import hapiAuthCookie from '@hapi/cookie';
-import { SERVER, ENVIRONMENT } from './utils/constant.js';
+import { SERVER, ENVIRONMENT, FE_SERVER } from './utils/constant.js';
 import route from './route.js';
 import { initDatabase } from './dbConnection.js';
 import { applyModelsAssociation, defineAllModel, syncModelWithDb } from './modelSync.js';
 import waConn from './waConnection.js';
-import AuthController from './controllers/AuthController.js';
 import initCron from './cron.js';
 import logger from './logger.js';
+import AuthController from './controllers/AuthController.js';
 
 async function init() {
   // check auth db connection
@@ -37,7 +37,7 @@ async function init() {
         multipart: { output: 'stream' },
       },
       cors: {
-        origin: ['*'], // Replace with your allowed origins or use '*' for any origin
+        origin: ENVIRONMENT === 'production' ? FE_SERVER.HOST : ['*'], // Replace with your allowed origins or use '*' for any origin
         additionalHeaders: ['cache-control', 'x-requested-with'],
       },
     },
@@ -47,11 +47,14 @@ async function init() {
   await server.register(hapiAuthCookie);
   server.auth.strategy('session', 'cookie', {
     cookie: {
+      strictHeader: true,
+      isSameSite: 'Strict', // handle csrf
+      clearInvalid: true,
       name: SERVER.COOKIE_NAME,
       password: SERVER.COOKIE_PASSWORD,
       isSecure: ENVIRONMENT === 'production', // if production then true
       ttl: ENVIRONMENT === 'development' ? 12 * 3600 * 1000 : 30 * 60 * 1000,
-      isHttpOnly: true,
+      isHttpOnly: true, // handle xss
     },
     redirectTo: '/login-username-password',
     validate: AuthController.validateCookie,
