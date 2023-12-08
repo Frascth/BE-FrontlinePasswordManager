@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { Sequelize } from 'sequelize';
-import { DB } from './utils/constant.js';
+import { DB, GLOBAL_SETTING } from './utils/constant.js';
 import logger from './logger.js';
 
 const sequelizeConn = new Sequelize({
@@ -14,7 +14,9 @@ const sequelizeConn = new Sequelize({
       require: true, // Use SSL
       rejectUnauthorized: false, // For self-signed certificates, set this to false
     },
+    useUTC: GLOBAL_SETTING.TIMEZONE === 'UTC',
   },
+  timezone: GLOBAL_SETTING.TIMEZONE,
   dialect: 'postgres',
   logging: (msg) => logger.info(msg),
 });
