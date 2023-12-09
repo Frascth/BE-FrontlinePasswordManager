@@ -7,6 +7,7 @@ import T3User from '../models/T3User.js';
 import Util from '../utils/Util.js';
 import { COOLDOWN, HTTP_CODE, TWO_FAC_AUTH, USER_STATUS } from '../utils/constant.js';
 import { resetSession } from '../cron.js';
+import T3UserDevices from '../models/T3UserDevices.js';
 
 class AuthController {
 
@@ -65,7 +66,39 @@ class AuthController {
 
     await user.save();
 
+    // check is new device
+    const isNewDevice = AuthController.isNewDevice(request);
+    if (isNewDevice) {
+      // send email alert here
+      //
+    }
+
     return Util.response(h, true, 'Success, login success', 200);
+
+  }
+
+  static async isNewDevice(request) {
+    const userFk = Util.getUserPk(request);
+    const ip = Util.getUserIp(request);
+    const { country, regionName: state, city } = await Util.getUserLocation(ip);
+    const userAgent = Util.getRawUserAgent(request);
+
+    const devices = await T3UserDevices.findOne({
+      where: {
+        userFk,
+        isDeleted: false,
+        [Op.or]: [
+          { [Op.and]: [{ userAgent }, { city }, { state }, { country }] },
+          { [Op.and]: [{ ip }, { userAgent }] },
+        ],
+      },
+    });
+
+    if (devices) {
+      return false;
+    }
+
+    return true;
 
   }
 

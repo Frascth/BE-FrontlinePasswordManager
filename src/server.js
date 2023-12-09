@@ -41,6 +41,11 @@ async function init() {
         additionalHeaders: ['cache-control', 'x-requested-with'],
       },
     },
+    app: {
+      proxy: {
+        trust: true,
+      },
+    },
   });
 
   // set server auth

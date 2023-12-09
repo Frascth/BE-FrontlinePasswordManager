@@ -90,6 +90,10 @@ const GLOBAL_SETTING = {
   TIMEZONE: process.env.GLOBAL_TIMEZONE,
 };
 
+const TP_API = {
+  GEOLOCATION: 'http://ip-api.com/json',
+};
+
 export {
   ENVIRONMENT,
   CHARACTERS,
@@ -106,4 +110,5 @@ export {
   HTTP_CODE,
   FE_SERVER,
   GLOBAL_SETTING,
+  TP_API,
 };

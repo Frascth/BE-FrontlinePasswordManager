@@ -3,19 +3,57 @@
 /* eslint-disable no-shadow */
 import crypto from 'crypto';
 import moment from 'moment-timezone';
+import fetch from 'node-fetch';
+import useragent from 'useragent';
 import bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import waConn from '../waConnection.js';
-import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL, GLOBAL_SETTING } from './constant.js';
+import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL, GLOBAL_SETTING, TP_API } from './constant.js';
 
 class Util {
 
   static getUserPk(request) {
     const { pk } = request.auth.credentials;
     return pk;
+  }
+
+  static getUserIp(request) {
+    const ip = request.headers['x-forwarded-for'] || request.headers['x-real-ip'] || request.info.remoteAddress;
+    return ip;
+  }
+
+  static getRawUserAgent(request) {
+    const ua = request.headers['user-agent'] || 'none';
+    return ua;
+  }
+
+  static getParsedUserAgent(request) {
+    const agent = useragent.parse(request.headers['user-agent']);
+    return {
+      device: agent.device.toString(),
+      os: agent.os.toString(),
+      browser: agent.toAgent(),
+    };
+  }
+
+  /**
+   * async function
+   * @param {string} ip
+   * @returns location object
+   */
+  static async getUserLocation(ip) {
+    const response = await fetch(`${TP_API.GEOLOCATION}/${ip}`);
+    if (response.status !== 'success') {
+      throw new Error('Geolocation api call failed: ', response.message);
+    }
+    return response;
+  }
+
+  static getGmapSrc(latitude, longitude) {
+    return `https://maps.google.com/maps?q=${longitude},${latitude}&hl=es;z=100&amp;output=embed`;
   }
 
   static isCookiePresent(request) {
