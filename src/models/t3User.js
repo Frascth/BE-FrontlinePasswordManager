@@ -37,9 +37,41 @@ class T3User extends Model {
     Util.sendMail(this.email, subject, content);
   }
 
-  async updateActivationLink() {
-    this.activationKey = Util.generateActivationKey(this.username);
-    this.save();
+  async alertNewDeviceLogin(userDetail, verifyKey) {
+    let { subject, content } = await T1HtmlContent.findOne({
+      attributes: ['subject', 'content'],
+      where: {
+        pk: HTML_CONTENT.NEW_DEVICE_LOGIN,
+      },
+    });
+
+    const { ipAddress, city, state, country, userAgentParsed, latitude, longitude } = userDetail;
+    const base64Image = await Util.getImageAsBase64(Util.getStaticMapImageUrl(longitude, latitude));
+    const uniqueId = Util.getRandomUrl(7);
+
+    content = content.replace(/{{username}}/g, this.username);
+    content = content.replace(/{{ipAddress}}/g, ipAddress);
+    content = content.replace(/{{location}}/g, `${city}, ${state}, ${country}`);
+    content = content.replace(/{{deviceDetail}}/g, `${userAgentParsed.device} via ${userAgentParsed.browser}`);
+    content = content.replace(/{{uid}}/g, uniqueId);
+    content = content.replace(/{{altText}}/g, `${city}, ${state}, ${country}`);
+    content = content.replace(/{{verifyNewDevices}}/g, `http://${SERVER.HOST}:${SERVER.PORT}/verify-new-device/${verifyKey}`);
+
+    // attachment for inline image
+    const attachments = [
+      {
+        filename: 'New Device Location.jpg',
+        path: base64Image,
+        cid: uniqueId, // Content-ID for inline reference
+      },
+    ];
+
+    Util.sendMail(this.email, subject, content, '', attachments);
+  }
+
+  async updateActivationLink(transaction) {
+    this.activationKey = Util.getRandomUrl();
+    this.save(transaction);
   }
 
 }
@@ -113,16 +145,6 @@ T3User.init({
   isDeleted: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
-  },
-  sessionId: {
-    type: DataTypes.STRING(4000),
-  },
-  sessionSalt: {
-    type: DataTypes.STRING(4000),
-  },
-  sessionExpires: {
-    type: DataTypes.DATE,
-    defaultValue: null,
   },
 }, {
   sequelize: sequelizeConn,
