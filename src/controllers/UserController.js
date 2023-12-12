@@ -16,7 +16,7 @@ class UserController {
     const { hashedText } = await Util.hashText(password);
 
     // generate activation key
-    const activationKey = Util.generateActivationKey(username);
+    const activationKey = Util.getRandomUrl();
 
     let newUser;
 
@@ -37,7 +37,7 @@ class UserController {
       return response;
     }
 
-    await newUser.getActivationLinkEmail();
+    newUser.getActivationLinkEmail();
 
     return Util.response(h, true, 'Success, user created', 201);
   }
