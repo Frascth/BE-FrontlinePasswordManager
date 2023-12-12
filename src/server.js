@@ -92,6 +92,7 @@ async function init() {
       };
 
       // log the error
+      console.log(error);
       logger.error(error.message);
     }
     return h.continue;
