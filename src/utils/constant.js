@@ -17,6 +17,7 @@ const SERVER = {
   ENCRYPTION_KEY_HEX: process.env.COOKIE_ENCRYPTION_KEY_HEX,
   INITIAL_VECTOR_HEX: process.env.COOKIE_INITIAL_VECTOR_HEX,
   LOG_PATH: './log',
+  TEMP_FILE_PATH: './temp',
 };
 
 const FE_SERVER = {
@@ -55,6 +56,7 @@ const TWO_FAC_AUTH = {
 const HTML_CONTENT = {
   ACCOUNT_ACTIVATION: 1,
   TOTP_LOGIN: 2,
+  NEW_DEVICE_LOGIN: 3,
 };
 
 const MESSAGE_CONTENT = {
@@ -69,6 +71,10 @@ const USER_AUTH_STATE = {
 
 const USER_STATUS = {
   ACTIVE: 'ACTIVE',
+};
+
+const USER_DEVICE_STATUS = {
+  AUTHENTICATED: 'AUTHENTICATED',
 };
 
 const COOLDOWN = {
@@ -91,7 +97,12 @@ const GLOBAL_SETTING = {
 };
 
 const TP_API = {
-  GEOLOCATION: 'http://ip-api.com/json',
+  GET_LOCATION: 'https://api.geoapify.com/v1/ipinfo?ip={{ip}}&apiKey={{apiKey}}',
+  GET_STATIC_MAP_IMAGE: 'https://maps.geoapify.com/v1/staticmap?style=osm-bright&width={{width}}&height={{height}}&center=lonlat:{{longitude}},{{latitude}}&zoom={{zoom}}&marker=lonlat:{{longitude}},{{latitude}};color:%23ff0000;size:small&apiKey={{apiKey}}',
+};
+
+const API_KEY = {
+  GEOAPIFY: process.env.GEOAPIFY,
 };
 
 export {
@@ -111,4 +122,6 @@ export {
   FE_SERVER,
   GLOBAL_SETTING,
   TP_API,
+  USER_DEVICE_STATUS,
+  API_KEY,
 };
