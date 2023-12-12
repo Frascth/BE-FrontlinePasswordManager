@@ -25,17 +25,17 @@ const prodRoute = [
     },
   },
   {
-    method: 'POST',
-    path: '/login-username-password',
-    handler: AuthController.loginUsernamePassword,
+    method: 'GET',
+    path: '/verify-new-device/{verifyKey}',
+    handler: AuthController.verifyNewDevice,
     options: {
       auth: false,
     },
   },
   {
     method: 'POST',
-    path: '/send-otp',
-    handler: AuthController.sendOtp,
+    path: '/login-username-password',
+    handler: AuthController.loginUsernamePassword,
     options: {
       auth: false,
     },
