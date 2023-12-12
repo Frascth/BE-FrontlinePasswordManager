@@ -2,6 +2,9 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-shadow */
 import crypto from 'crypto';
+import https from 'https';
+import { promises as fs } from 'fs';
+import { dirname } from 'path';
 import moment from 'moment-timezone';
 import fetch from 'node-fetch';
 import useragent from 'useragent';
@@ -9,15 +12,46 @@ import bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
-import fs from 'fs';
 import waConn from '../waConnection.js';
-import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL, GLOBAL_SETTING, TP_API } from './constant.js';
+import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL, GLOBAL_SETTING, TP_API, API_KEY } from './constant.js';
+import logger from '../logger.js';
 
 class Util {
 
+  static async getUserDetail(request) {
+    const ipAddress = Util.getUserIp(request);
+    const {
+      continent: { name: continent },
+      country: { name: country, capital },
+      state: { name: state },
+      city: { name: city },
+      location: { longitude, latitude },
+    } = await Util.getUserLocation(ipAddress);
+
+    // example Asia/Jakarta (not very accurate)
+    const timezone = `${continent}/${capital}`;
+
+    return {
+      request,
+      userFk: Util.getUserPk(request), // only valid when user is authenticated
+      ipAddress,
+      country,
+      state,
+      city,
+      longitude,
+      latitude,
+      timezone,
+      userAgent: Util.getRawUserAgent(request),
+      userAgentParsed: Util.getParsedUserAgent(request),
+    };
+  }
+
   static getUserPk(request) {
-    const { pk } = request.auth.credentials;
-    return pk;
+    if (request.auth.credentials === null) {
+      return undefined;
+    }
+
+    return request.auth.credentials.pk;
   }
 
   static getUserIp(request) {
@@ -42,18 +76,97 @@ class Util {
   /**
    * async function
    * @param {string} ip
-   * @returns location object
+   * @returns location object see
+   * https://apidocs.geoapify.com/playground/ip-geolocation/
    */
   static async getUserLocation(ip) {
-    const response = await fetch(`${TP_API.GEOLOCATION}/${ip}`);
-    if (response.status !== 'success') {
-      throw new Error('Geolocation api call failed: ', response.message);
+    let apiUrl = TP_API.GET_LOCATION;
+    apiUrl = apiUrl.replace(/{{ip}}/g, ip);
+    apiUrl = apiUrl.replace(/{{apiKey}}/g, API_KEY.GEOAPIFY);
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+    if (response.status !== 200) {
+      console.log(data.message);
+      throw new Error(`Geolocation api call failed: ${data.message}`);
     }
-    return response;
+    return data;
   }
 
-  static getGmapSrc(latitude, longitude) {
-    return `https://maps.google.com/maps?q=${longitude},${latitude}&hl=es;z=100&amp;output=embed`;
+  static getStaticMapImageUrl(longitude, latitude, width = 600, height = 400, zoom = 14) {
+    let apiUrl = TP_API.GET_STATIC_MAP_IMAGE;
+    apiUrl = apiUrl.replace(/{{width}}/g, width);
+    apiUrl = apiUrl.replace(/{{height}}/g, height);
+    apiUrl = apiUrl.replace(/{{zoom}}/g, zoom);
+    apiUrl = apiUrl.replace(/{{longitude}}/g, longitude);
+    apiUrl = apiUrl.replace(/{{latitude}}/g, latitude);
+    apiUrl = apiUrl.replace(/{{apiKey}}/g, API_KEY.GEOAPIFY);
+    return apiUrl;
+  }
+
+  /**
+   *
+   * @param {string} imageUrl
+   * @param {string} format
+   * @returns base64 string with prefix
+   */
+  static async getImageAsBase64(imageUrl, format = 'jpeg') {
+    const response = await new Promise((resolve, reject) => {
+      https.get(imageUrl, { responseType: 'arraybuffer' }, (res) => {
+        resolve(res);
+      }).on('error', (error) => {
+        reject(error);
+      });
+    });
+
+    if (response.statusCode === 200) {
+      const data = [];
+      await new Promise((resolve, reject) => {
+        response.on('data', (chunk) => {
+          data.push(chunk);
+        });
+
+        response.on('end', () => {
+          resolve();
+        });
+
+        response.on('error', (error) => {
+          reject(error);
+        });
+      });
+
+      const imageBuffer = Buffer.concat(data);
+      return `data:image/${format};base64,${imageBuffer.toString('base64')}`;
+    }
+
+    logger.error(`Failed to fetch the image. HTTP Status Code: ${response.statusCode}`);
+    console.log(`Failed to fetch the image. HTTP Status Code: ${response.statusCode}`);
+    throw new Error(`Failed to fetch the image. HTTP Status Code: ${response.statusCode}`);
+  }
+
+  static removeBase64Prefix(base64String) {
+    if (base64String.includes('base64,')) {
+      return base64String.split('base64,')[1];
+    }
+
+    return base64String;
+  }
+
+  static async writeBase64ToFile(base64String, filePath) {
+    base64String = Util.removeBase64Prefix(base64String);
+    try {
+      // make folder if there is no that folder
+      await fs.mkdir(dirname(filePath), { recursive: true });
+
+      // Create a buffer from the Base64-encoded string
+      const buffer = Buffer.from(base64String, 'base64');
+
+      // Write the buffer to the file asynchronously
+      await fs.writeFile(filePath, buffer);
+
+      console.log('File written successfully:', filePath);
+    } catch (error) {
+      console.error('Error writing file:', error.message);
+    }
   }
 
   static isCookiePresent(request) {
@@ -61,6 +174,10 @@ class Util {
       return false;
     }
     return true;
+  }
+
+  static getSessionSalt(request) {
+    return request.state[SERVER.COOKIE_NAME].sessionSalt;
   }
 
   static generateRandomString(length = 40) {
@@ -188,7 +305,7 @@ class Util {
     });
   }
 
-  static async sendMail(to, subject, html, text = '') {
+  static async sendMail(to, subject, html, text = '', attachments = []) {
     const transporter = nodemailer.createTransport({
       service: 'Gmail',
       host: EMAIL.HOST,
@@ -209,16 +326,19 @@ class Util {
       subject,
       text,
       html,
-      attachment: [],
+      attachments,
     };
 
     // Send the email
     try {
       const info = await transporter.sendMail(mailOptions);
       // If the email was sent successfully
+      // console.log(info);
       return { status: true, message: 'Success, email sent', info };
     } catch (error) {
       // If there was an error sending the email
+      console.log(error);
+      logger.error(error.message);
       return { status: false, message: error.message };
     }
 
@@ -285,8 +405,13 @@ class Util {
     return result;
   }
 
-  static generateActivationKey(username) {
-    return username + nanoid(30);
+  /**
+   *
+   * @param {int} length
+   * @returns url safe random string
+   */
+  static getRandomUrl(length = 30) {
+    return nanoid(length);
   }
 
   static escapeInput(inputString) {
