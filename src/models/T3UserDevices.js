@@ -51,7 +51,7 @@ T3UserDevices.init({
   city: {
     type: DataTypes.STRING(4000),
   },
-  gmapSrc: {
+  mapImageSrc: {
     type: DataTypes.STRING(4000),
   },
   deletedAt: {
@@ -61,9 +61,22 @@ T3UserDevices.init({
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-  isAuthenticated: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
+  sessionId: {
+    type: DataTypes.STRING(4000),
+  },
+  sessionSalt: {
+    type: DataTypes.STRING(4000),
+  },
+  sessionExpires: {
+    type: DataTypes.DATE,
+    defaultValue: null,
+  },
+  timezone: {
+    type: DataTypes.STRING(4000),
+  },
+  verifyKey: {
+    type: DataTypes.STRING(4000),
+    defaultValue: null,
   },
 }, {
   sequelize: sequelizeConn,
