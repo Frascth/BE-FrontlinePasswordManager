@@ -6,6 +6,7 @@ import T3User from './models/T3User.js';
 import { USER_AUTH_STATE } from './utils/constant.js';
 import logger from './logger.js';
 import Util from './utils/Util.js';
+import T3UserDevices from './models/T3UserDevices.js';
 
 async function a() {
   // run once every server start / restart
@@ -63,27 +64,29 @@ async function b() {
   logger.info('resetSession every 1 minutes done');
 }
 
-async function resetSession(sessionSalt) {
+async function resetSession(userFk, sessionSalt) {
   // Calculate the date and time for 30 minutes from now
-  const scheduledDate = new Date(Util.getDatetime().getTime() + 30 * 60 * 1000);
+  const scheduledDate = Util.surplusDate(Util.getDatetime(), 30 * 60);
 
   // Schedule the reset session job
   scheduleJob(scheduledDate, async () => {
-    const user = await T3User.findOne({ where: {
+    const userDevices = await T3UserDevices.findOne({ where: {
+      userFk,
       sessionSalt,
       isDeleted: false,
     },
     });
 
-    if (user) {
-      user.sessionId = null;
-      user.sessionExpires = null;
-      user.sessionSalt = null;
-      await user.save();
+    if (userDevices) {
+      userDevices.sessionId = null;
+      userDevices.sessionExpires = null;
+      userDevices.sessionSalt = null;
+      await userDevices.save();
     }
   });
 
-  logger.info(`resetSession(${sessionSalt}), scheduled to run at: ${scheduledDate}`);
+  console.log(`resetSession(${userFk}, ${sessionSalt}), scheduled to run at: ${scheduledDate}`);
+  logger.info(`resetSession(${userFk}, ${sessionSalt}), scheduled to run at: ${scheduledDate}`);
 }
 
 function initCron() {
