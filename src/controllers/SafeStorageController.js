@@ -185,6 +185,10 @@ class SafeStorageController {
       return Util.response(h, true, 'Success, get all datas', 200, datas);
     }
 
+    if (datas.total <= 0) {
+      return Util.response(h, true, 'Success, get all datas', 200, datas);
+    }
+
     // get some data with query params
     const { needRedirect, redirectUrl } = SafeStorageController.preprocessRequestQuery(request, h, datas.total);
     if (needRedirect) {
