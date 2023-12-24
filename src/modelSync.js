@@ -7,6 +7,7 @@ import T1HtmlContent from './models/T1HtmlContent.js';
 import T1MessageContent from './models/T1MessageContent.js';
 import logger from './logger.js';
 import T3UserDevices from './models/T3UserDevices.js';
+import T1Country from './models/T1Country.js';
 
 /**
  * callint a Model.init and add all model to sequelizeConn.models
@@ -21,6 +22,7 @@ function defineAllModel() {
     T3Otp,
     T3SafeStorage,
     T3UserDevices,
+    T1Country,
   ];
 
   // define all model to sequelizeConn.models
