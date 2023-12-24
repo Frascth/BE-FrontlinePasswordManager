@@ -35,6 +35,7 @@ class AuthController {
   static async loginUsernamePassword(request, h) {
     let { username, password } = request.payload;
     const userDetail = await Util.getUserDetail(request);
+
     const user = await T3User.findOne({
       where: {
         username: { [Op.iLike]: username },
@@ -59,16 +60,16 @@ class AuthController {
     }
 
     if (!isValid) {
-      return Util.response(h, false, 'Failed, unauthorized', 401);
+      return Util.response(h, false, 'Failed, wrong username or password', 401);
     }
 
     // check is new device
     const isNewDevice = await AuthController.isNewDevice(userDetail);
-    await user.save();
+    // await user.save();
 
     if (isNewDevice) {
       // create device data
-      const { ipAddress, country, regionName: state, city, longitude, latitude, timezone } = userDetail;
+      const { ipAddress, country, state, city, longitude, latitude, timezone } = userDetail;
       const verifyKey = Util.getRandomUrl();
       await T3UserDevices.create({
         userFk: user.pk,
@@ -107,13 +108,10 @@ class AuthController {
       userFk,
       ipAddress,
       country,
-      regionName,
       state,
       city,
       userAgent,
     } = userDetail;
-
-    state = state || regionName;
 
     const devices = await T3UserDevices.findOne({
       where: {
@@ -141,14 +139,12 @@ class AuthController {
       userFk,
       ipAddress,
       country,
-      regionName,
       state,
       city,
       userAgent,
     } = userDetail;
 
     userFk = Util.getUserPk(request) || userFk;
-    state = state || regionName;
 
     const devicesRecord = await T3UserDevices.findOne({
       where: {
@@ -199,6 +195,7 @@ class AuthController {
   }
 
   static async loginConfirmOtp(request, h) {
+    const transaction = await sequelizeConn.transaction();
     let { username, password, otpCode } = request.payload;
     const userDetail = await Util.getUserDetail(request);
     username = username.toLowerCase();
@@ -258,9 +255,9 @@ class AuthController {
     }
 
     otp.isApprov = true;
-    await otp.save();
+    await otp.save({ transaction });
     user.lastLoginTime = Util.getDatetime().toISOString();
-    await user.save();
+    await user.save({ transaction });
 
     // session defining based on devices
     const sessionId = Util.generateRandomString(30);
@@ -270,6 +267,7 @@ class AuthController {
     const isNewDevice = await AuthController.isNewDevice(userDetail);
 
     if (isNewDevice) {
+      await transaction.rollback();
       return Util.response(h, false, 'Failed, new device, location, or browser not been verified yet', HTTP_CODE.FORBIDEN);
     }
 
@@ -287,6 +285,7 @@ class AuthController {
 
     // set job for logout delete session db after 30 minutes
     resetSession(user.pk, sessionSalt);
+    await transaction.commit();
     return Util.response(h, true, 'Success, login confirmed', 200, { isNewDevice });
 
   }
@@ -425,7 +424,7 @@ class AuthController {
     });
     if (!user) {
       transaction.rollback();
-      return Util.response(h, false, 'Failed, user device not found', 404);
+      return Util.response(h, false, 'Failed, user not found', 404);
     }
 
     try {
@@ -437,7 +436,132 @@ class AuthController {
       return Util.response(h, false, error, 500);
     }
 
-    return Util.response(h, true, 'Success, new device, location, or browser verified', 200);
+    return Util.response(h, true, 'Success, new device, browser, or location verified', 200);
+  }
+
+  static async logoutAllDevices(request, h) {
+    const transaction = await sequelizeConn.transaction();
+    const { verifyKey } = request.params;
+    const userDevice = await T3UserDevices.findOne({ where: { verifyKey, isDeleted: false } });
+
+    if (!userDevice) {
+      return Util.response(h, false, 'Failed, user device not found', 404);
+    }
+
+    const isExpired = Util.isTimeEqualorAboveInterval(userDevice.updatedAt, Util.getDatetime(), COOLDOWN.OTP.TIME, 'minute');
+    if (isExpired) {
+      return Util.response(h, false, 'Failed, reset password link has expired', 404);
+    }
+
+    const user = await T3User.findOne({
+      where: {
+        pk: userDevice.userFk,
+        isDeleted: false,
+        activationKey: USER_STATUS.ACTIVE,
+      },
+    });
+    if (!user) {
+      return Util.response(h, false, 'Failed, user not found', 404);
+    }
+
+    try {
+      // logout from all devices
+      await T3UserDevices.update(
+        {
+          sessionId: null,
+          sessionSalt: null,
+          sessionExpires: null,
+        },
+        {
+          where: {
+            userFk: user.pk,
+            isDeleted: false,
+            [Op.or]: [
+              { sessionId: { [Op.not]: null } },
+              { sessionSalt: { [Op.not]: null } },
+              { sessionExpires: { [Op.not]: null } },
+            ],
+          },
+          transaction,
+        },
+      );
+
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      return Util.response(h, false, error, 500);
+    }
+
+    return Util.response(h, true, 'Success, logout from all device', 200);
+  }
+
+  static async resetPassword(request, h) {
+    const transaction = await sequelizeConn.transaction();
+    const { verifyKey } = request.params;
+    const userDevice = await T3UserDevices.findOne({ where: { verifyKey, isDeleted: false } });
+
+    if (!userDevice) {
+      return Util.response(h, false, 'Failed, user device not found', 404);
+    }
+
+    const isExpired = Util.isTimeEqualorAboveInterval(userDevice.updatedAt, Util.getDatetime(), COOLDOWN.OTP.TIME, 'minute');
+    if (isExpired) {
+      return Util.response(h, false, 'Failed, reset password link has expired', 404);
+    }
+
+    const user = await T3User.findOne({
+      where: {
+        pk: userDevice.userFk,
+        isDeleted: false,
+        activationKey: USER_STATUS.ACTIVE,
+      },
+    });
+    if (!user) {
+      return Util.response(h, false, 'Failed, user not found', 404);
+    }
+
+    try {
+      // logout from all devices
+      await T3UserDevices.update(
+        {
+          sessionId: null,
+          sessionSalt: null,
+          sessionExpires: null,
+        },
+        {
+          where: {
+            userFk: user.pk,
+            isDeleted: false,
+            [Op.or]: [
+              { sessionId: { [Op.not]: null } },
+              { sessionSalt: { [Op.not]: null } },
+              { sessionExpires: { [Op.not]: null } },
+            ],
+          },
+          transaction,
+        },
+      );
+
+      userDevice.verifyKey = USER_DEVICE_STATUS.RESET_PASSWORD;
+      await userDevice.save({ transaction });
+
+      // set new password
+      let { password } = request.payload;
+      const { hashedText: hashedPassword } = await Util.hashText(password);
+      user.hashedPassword = hashedPassword;
+      await user.save({ transaction });
+
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      return Util.response(h, false, error, 500);
+    }
+
+    // send mail password reset
+    // create new device with verifyKey
+    // and link to reset again
+
+    return Util.response(h, true, 'Success, reset password and logout from all device', 200);
   }
 
 }

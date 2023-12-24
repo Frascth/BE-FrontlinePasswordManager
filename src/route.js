@@ -34,6 +34,22 @@ const prodRoute = [
   },
   {
     method: 'POST',
+    path: '/reset-password/{verifyKey}',
+    handler: AuthController.resetPassword,
+    options: {
+      auth: false,
+    },
+  },
+  {
+    method: 'GET',
+    path: '/reset-password/{verifyKey}',
+    handler: AuthController.logoutAllDevices,
+    options: {
+      auth: false,
+    },
+  },
+  {
+    method: 'POST',
     path: '/login-username-password',
     handler: AuthController.loginUsernamePassword,
     options: {
@@ -41,7 +57,7 @@ const prodRoute = [
     },
   },
   {
-    method: 'PUT',
+    method: 'POST',
     path: '/confirm-otp',
     handler: AuthController.loginConfirmOtp,
     options: {
