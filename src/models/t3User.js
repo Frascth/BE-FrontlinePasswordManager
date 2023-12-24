@@ -55,6 +55,7 @@ class T3User extends Model {
     content = content.replace(/{{deviceDetail}}/g, `${userAgentParsed.device} via ${userAgentParsed.browser}`);
     content = content.replace(/{{uid}}/g, uniqueId);
     content = content.replace(/{{altText}}/g, `${city}, ${state}, ${country}`);
+    content = content.replace(/{{urlResetPassword}}/g, `http://${SERVER.HOST}:${SERVER.PORT}/reset-password/${verifyKey}`);
     content = content.replace(/{{verifyNewDevices}}/g, `http://${SERVER.HOST}:${SERVER.PORT}/verify-new-device/${verifyKey}`);
 
     // attachment for inline image
