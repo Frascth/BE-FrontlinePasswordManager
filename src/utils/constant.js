@@ -75,6 +75,7 @@ const USER_STATUS = {
 
 const USER_DEVICE_STATUS = {
   AUTHENTICATED: 'AUTHENTICATED',
+  RESET_PASSWORD: 'RESET_PASSWORD',
 };
 
 const COOLDOWN = {
@@ -97,12 +98,18 @@ const GLOBAL_SETTING = {
 };
 
 const TP_API = {
-  GET_LOCATION: 'https://api.geoapify.com/v1/ipinfo?ip={{ip}}&apiKey={{apiKey}}',
+  GET_LOCATION_GEOAPIFY: 'https://api.geoapify.com/v1/ipinfo?ip={{ip}}&apiKey={{apiKey}}', // sometimes timed out occur even request far away from limit
+  GEOAPIFY_REACH_LIMIT: false,
+  GET_LOCATION_IPINFO: 'https://ipinfo.io/{{ip}}?token={{apiKey}}',
+  IPINFO_REACH_LIMIT: false,
+  GET_LOCATION_IPSTACK: 'http://api.ipstack.com/{{ip}}?access_key={{apiKey}}',
+  IPSTACK_REACH_LIMIT: false,
   GET_STATIC_MAP_IMAGE: 'https://maps.geoapify.com/v1/staticmap?style=osm-bright&width={{width}}&height={{height}}&center=lonlat:{{longitude}},{{latitude}}&zoom={{zoom}}&marker=lonlat:{{longitude}},{{latitude}};color:%23ff0000;size:small&apiKey={{apiKey}}',
 };
 
 const API_KEY = {
   GEOAPIFY: process.env.GEOAPIFY,
+  IPINFO: process.env.IPINFO,
 };
 
 export {

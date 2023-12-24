@@ -2,6 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-shadow */
 import crypto from 'crypto';
+import { scheduleJob } from 'node-schedule';
 import https from 'https';
 import { promises as fs } from 'fs';
 import { dirname } from 'path';
@@ -13,23 +14,41 @@ import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
 import waConn from '../waConnection.js';
-import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL, GLOBAL_SETTING, TP_API, API_KEY } from './constant.js';
+import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL, GLOBAL_SETTING, TP_API, API_KEY, HTTP_CODE } from './constant.js';
 import logger from '../logger.js';
+import T1Country from '../models/T1Country.js';
 
 class Util {
+
+  static async resetApiLimit(key) {
+    let scheduledDate;
+    if (key === 'IPINFO_REACH_LIMIT') {
+      // ipinfo limit is for 30 days
+      scheduledDate = Util.surplusDate(Util.getDatetime(), 24 * 3600 * 30);
+      scheduleJob(scheduledDate, () => {
+        TP_API[key] = false;
+      });
+    } else if (key === 'GEOAPIFY_REACH_LIMIT') {
+      // geoapify limit is for 24 hours
+      scheduledDate = Util.surplusDate(Util.getDatetime(), 24 * 3600);
+      scheduleJob(scheduledDate, () => {
+        TP_API[key] = false;
+      });
+    }
+    console.log(`resetApiLimit(${key}), scheduled to run at: ${scheduledDate}`);
+    logger.info(`resetApiLimit(${key}), scheduled to run at: ${scheduledDate}`);
+  }
 
   static async getUserDetail(request) {
     const ipAddress = Util.getUserIp(request);
     const {
-      continent: { name: continent },
-      country: { name: country, capital },
-      state: { name: state },
-      city: { name: city },
-      location: { longitude, latitude },
+      country,
+      state,
+      city,
+      timezone,
+      longitude,
+      latitude,
     } = await Util.getUserLocation(ipAddress);
-
-    // example Asia/Jakarta (not very accurate)
-    const timezone = `${continent}/${capital}`;
 
     return {
       request,
@@ -80,16 +99,76 @@ class Util {
    * https://apidocs.geoapify.com/playground/ip-geolocation/
    */
   static async getUserLocation(ip) {
-    let apiUrl = TP_API.GET_LOCATION;
-    apiUrl = apiUrl.replace(/{{ip}}/g, ip);
-    apiUrl = apiUrl.replace(/{{apiKey}}/g, API_KEY.GEOAPIFY);
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-    if (response.status !== 200) {
-      console.log(data.message);
-      throw new Error(`Geolocation api call failed: ${data.message}`);
+
+    let userLocation;
+
+    const geoapify = async (ip) => {
+      let apiUrl = TP_API.GET_LOCATION_GEOAPIFY;
+      apiUrl = apiUrl.replace(/{{ip}}/g, ip);
+      apiUrl = apiUrl.replace(/{{apiKey}}/g, API_KEY.GEOAPIFY);
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      if (response.status === HTTP_CODE.TOO_MANY_REQUEST) {
+        TP_API.GEOAPIFY_REACH_LIMIT = true;
+        console.log('GEOAPIFY api reach limit daily usage');
+        // call cron to schedule 24 hour in the future set reach limit to false
+        resetApiLimit('GEOAPIFY_REACH_LIMIT');
+        return undefined;
+      }
+
+      if (response.status !== 200) {
+        console.log(data.message);
+        return undefined;
+      }
+
+      const {
+        continent: { name: continent },
+        country: { name: country, capital },
+        state: { name: state },
+        city: { name: city },
+        location: { longitude, latitude },
+      } = data;
+
+      const timezone = `${continent}/${capital}`;
+
+      return { city, state, country, timezone, longitude, latitude };
+    };
+
+    const ipinfo = async (ip) => {
+      let apiUrl = TP_API.GET_LOCATION_IPINFO;
+      apiUrl = apiUrl.replace(/{{ip}}/g, ip);
+      apiUrl = apiUrl.replace(/{{apiKey}}/g, API_KEY.IPINFO);
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      if (response.status === HTTP_CODE.TOO_MANY_REQUEST) {
+        TP_API.IPINFO_REACH_LIMIT = true;
+        console.log('IPINFO api reach limit monthly usage');
+        // call cron to schedule 30 days in the future set reach limit to false
+        resetApiLimit('IPINFO_REACH_LIMIT');
+        return undefined;
+      }
+
+      if (response.status !== 200) {
+        console.log(data.message);
+        return undefined;
+      }
+
+      const { city, region: state, countryCode, timezone, loc } = data;
+      const [latitude, longitude] = loc.split(',');
+      const countryObject = await T1Country.findOne({ where: { code: countryCode, isDeleted: false } });
+      const country = countryObject ? countryObject.name : countryCode;
+
+      return { city, state, country, timezone, longitude, latitude };
+    };
+
+    if (TP_API.GEOAPIFY_REACH_LIMIT === false) {
+      userLocation = await geoapify(ip);
+    } else {
+      userLocation = await ipinfo(ip);
     }
-    return data;
+    return userLocation;
   }
 
   static getStaticMapImageUrl(longitude, latitude, width = 600, height = 400, zoom = 14) {
@@ -333,12 +412,11 @@ class Util {
     try {
       const info = await transporter.sendMail(mailOptions);
       // If the email was sent successfully
-      // console.log(info);
       return { status: true, message: 'Success, email sent', info };
     } catch (error) {
       // If there was an error sending the email
-      console.log(error);
-      logger.error(error.message);
+      console.log('Send email error:', error);
+      logger.error('Send email error:', error.message);
       return { status: false, message: error.message };
     }
 
