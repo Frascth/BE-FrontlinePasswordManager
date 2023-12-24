@@ -37,7 +37,7 @@ async function init() {
         multipart: { output: 'stream' },
       },
       cors: {
-        origin: ENVIRONMENT === 'production' ? FE_SERVER.HOST : ['*'], // Replace with your allowed origins or use '*' for any origin
+        origin: ENVIRONMENT === 'production' ? ['*'] : ['*'], // Replace with your allowed origins or use '*' for any origin
         additionalHeaders: ['cache-control', 'x-requested-with'],
       },
     },
