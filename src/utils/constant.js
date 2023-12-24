@@ -5,7 +5,9 @@ config();
 
 // just change this to development or production
 // the rest of constant will adapt
-const ENVIRONMENT = 'development';
+const { ENVIRONMENT } = process.env;
+//
+
 const CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{}|;:,.<>?';
 const { ADMIN_WA_NO } = process.env;
 
