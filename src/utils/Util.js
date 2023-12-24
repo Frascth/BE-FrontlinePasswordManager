@@ -14,7 +14,7 @@ import { nanoid } from 'nanoid';
 import escape from 'lodash.escape';
 import nodemailer from 'nodemailer';
 import waConn from '../waConnection.js';
-import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL, GLOBAL_SETTING, TP_API, API_KEY, HTTP_CODE } from './constant.js';
+import { ENVIRONMENT, CHARACTERS, SERVER, EMAIL, GLOBAL_SETTING, TP_API, API_KEY, HTTP_CODE, SAFE_STORAGE } from './constant.js';
 import logger from '../logger.js';
 import T1Country from '../models/T1Country.js';
 
@@ -264,6 +264,28 @@ class Util {
     return charArray.join('');
   }
 
+  static generateHexString(bytes = 16) {
+    // bytes : character = 1 : 2
+    // 16 bytes = 32 character
+    return crypto.randomBytes(bytes).toString('hex');
+  }
+
+  static encryptPassword(plainText, salt, iv) {
+    const key = crypto.pbkdf2Sync(SAFE_STORAGE.MASTER_PASSWORD, salt, 100000, 32, 'sha256');
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), Buffer.from(iv, 'hex'));
+    let encrypted = cipher.update(plainText, 'utf-8', 'hex');
+    encrypted += cipher.final('hex');
+    return encrypted;
+  }
+
+  static decryptPassword(encryptedData, salt, iv) {
+    const key = crypto.pbkdf2Sync(SAFE_STORAGE.MASTER_PASSWORD, salt, 100000, 32, 'sha256');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), Buffer.from(iv, 'hex'));
+    let decrypted = decipher.update(encryptedData, 'hex', 'utf-8');
+    decrypted += decipher.final('utf-8');
+    return decrypted;
+  }
+
   static isEmail(inputString) {
     // Regular expression pattern for a simple email validation
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -464,7 +486,6 @@ class Util {
     encryptedText += cipher.final('hex');
 
     return encryptedText;
-
   }
 
   static decryptText(encryptedText) {

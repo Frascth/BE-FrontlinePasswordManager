@@ -25,13 +25,18 @@ class SafeStorageController {
     const userFk = Util.getUserPk(request);
 
     try {
-      const encryptedPassword = Util.encryptText(password);
+      const saltHex = Util.generateHexString();
+      const iv = Util.generateHexString();
+      const encryptedPassword = Util.encryptPassword(password, saltHex, iv);
+
       await T3SafeStorage.create({
         userFk,
         title,
         website,
         username,
         password: encryptedPassword,
+        initVecHex: iv,
+        saltHex,
       }, { transaction });
       await transaction.commit();
     } catch (error) {
@@ -180,7 +185,7 @@ class SafeStorageController {
     // get all data no query params
     if (Object.keys(request.query).length === 0) {
       datas.datas = await T3SafeStorage.findAll({ where: { userFk, isDeleted: false } });
-      datas.datas.forEach((data) => { data.password = Util.decryptText(data.password); });
+      datas.datas.forEach((data) => { data.password = Util.decryptPassword(data.password, data.saltHex, data.initVecHex); });
       datas.datasCount = datas.total;
       return Util.response(h, true, 'Success, get all datas', 200, datas);
     }
@@ -224,7 +229,7 @@ class SafeStorageController {
       order: SafeStorageController.getListOrderSequelize(request),
     });
 
-    datas.datas.forEach((data) => { data.password = Util.decryptText(data.password); });
+    datas.datas.forEach((data) => { data.password = Util.decryptPassword(data.password, data.saltHex, data.initVecHex); });
     datas.datasCount = datas.datas.length;
     return Util.response(h, true, 'Success, get some datas', 200, datas);
   }

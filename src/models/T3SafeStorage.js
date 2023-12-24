@@ -42,6 +42,12 @@ T3SafeStorage.init({
   password: {
     type: DataTypes.STRING(4000),
   },
+  initVecHex: {
+    type: DataTypes.STRING(4000),
+  },
+  saltHex: {
+    type: DataTypes.STRING(4000),
+  },
   deletedAt: {
     type: DataTypes.DATE,
   },
@@ -54,6 +60,7 @@ T3SafeStorage.init({
   modelName: 'T3SafeStorage',
   freezeTableName: true,
   timestamps: true,
+  alter: true,
 });
 
 T3SafeStorage.beforeSave(async (t3SafeStorage) => {

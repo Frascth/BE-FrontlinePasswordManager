@@ -14,8 +14,8 @@ const SERVER = {
   PORT: ENVIRONMENT === 'development' ? process.env.DEV_SERVER_PORT : process.env.PROD_SERVER_PORT,
   COOKIE_NAME: process.env.COOKIE_NAME,
   COOKIE_PASSWORD: process.env.COOKIE_PASSWORD,
-  ENCRYPTION_KEY_HEX: process.env.COOKIE_ENCRYPTION_KEY_HEX,
-  INITIAL_VECTOR_HEX: process.env.COOKIE_INITIAL_VECTOR_HEX,
+  ENCRYPTION_KEY_HEX: process.env.SERVER_ENCRYPTION_KEY_HEX,
+  INITIAL_VECTOR_HEX: process.env.SERVER_INITIAL_VECTOR_HEX,
   LOG_PATH: './log',
   TEMP_FILE_PATH: './temp',
 };
@@ -112,6 +112,10 @@ const API_KEY = {
   IPINFO: process.env.IPINFO,
 };
 
+const SAFE_STORAGE = {
+  MASTER_PASSWORD: process.env.SS_MASTER_PASSWORD,
+};
+
 export {
   ENVIRONMENT,
   CHARACTERS,
@@ -131,4 +135,5 @@ export {
   TP_API,
   USER_DEVICE_STATUS,
   API_KEY,
+  SAFE_STORAGE,
 };
