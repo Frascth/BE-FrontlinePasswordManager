@@ -11,7 +11,7 @@ const prodRoute = [
   {
     method: 'GET',
     path: '/',
-    handler: UserController.createUser,
+    handler: AuthController.welcome,
     options: {
       auth: false,
     },
