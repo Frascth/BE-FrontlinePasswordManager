@@ -9,6 +9,14 @@ let route;
 
 const prodRoute = [
   {
+    method: 'GET',
+    path: '/',
+    handler: UserController.createUser,
+    options: {
+      auth: false,
+    },
+  },
+  {
     method: 'POST',
     path: '/user',
     handler: UserController.createUser,

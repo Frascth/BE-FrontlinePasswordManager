@@ -12,6 +12,10 @@ import { sequelizeConn } from '../dbConnection.js';
 
 class AuthController {
 
+  static async activateAccount(request, h) {
+    return Util.response(h, true, 'Welcome to Frontline Password Manager', 200);
+  }
+
   static async logout(request, h) {
     const { pk } = request.auth.credentials;
     const sessionSalt = Util.getSessionSalt(request);
