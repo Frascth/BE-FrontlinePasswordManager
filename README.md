@@ -53,7 +53,7 @@ Run below command to clone the code repository from Github:
 
 ```bash
 git clone https://github.com/Frascth/FrontlinePasswordManager.git
-git clone https://Frascth:token@github.com/Frascth/FrontlinePasswordManager.git
+git clone https://Frascth:token@github.com/Frascth/BE-FrontlinePasswordManager
 ```
 
 Get inside the directory and Install Packages
@@ -61,6 +61,27 @@ Get inside the directory and Install Packages
 ```bash
 cd FrontlinePasswordManager
 npm install
+```
+
+puppeter need aditional chrome dependency or chrome itself
+install chrome
+```bash
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt install ./google-chrome-stable_current_amd64.deb
+```
+
+or
+
+```bash
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo dpkg -i google-chrome-stable_current_amd64.deb
+sudo apt-get install -f
+```
+
+dependency only
+```bash
+sudo apt-get install libx11-xcb1 libatk-bridge2.0-0 libcups2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libx11-xcb1 libxcomposite1 libasound2 libatk1.0-0 libatk-bridge2.0-0 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 libcairo2
+
 ```
 
 Start the application
