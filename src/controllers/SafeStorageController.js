@@ -161,6 +161,7 @@ class SafeStorageController {
 
   static async getDatas(request, h) {
     const userFk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
+    console.log('HEEEEEEEREEEEEEEEEEEE', userFk);
     // const userFk = 'e0naCzvo7L4KlrlGWYE-z';
 
     const isRedirected = !Util.isEmptyString(request.info.referrer);
