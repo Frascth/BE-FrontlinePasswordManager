@@ -93,7 +93,7 @@ npm run prod
 ```
 
 
-## Install and Configure Nginx
+## Step 3: Install and Configure Nginx
 install and get default config nginx
 ```bash
 sudo apt-get update
@@ -165,7 +165,7 @@ server {
 }
 ```
 
-## Install and Start Server with PM2
+## Step 4: Install and Start Server with PM2
 install pm2
 ```bash
 sudo apt-get update
@@ -177,4 +177,17 @@ start app with pm2
 pm2 start BE-FrontlinePasswordManager/src/server.js --name BE-Frontline
 pm2 save
 pm2 startup
+```
+
+## Step 5: Whatsapp Maintenance
+if Whatsapp barcode for login not working try to clear cache of Whatsapp in server
+
+for windows
+```bash
+npm run ccw
+```
+
+for linux
+```bash
+npm run ccl
 ```
