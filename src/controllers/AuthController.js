@@ -201,6 +201,7 @@ class AuthController {
     }
 
     const valid = await Util.compareHash(session.id, userDevices.sessionId);
+    console.log('AUTH COOKIEEE is ', valid);
     if (!valid) {
       return { isValid: false, credentials: null };
     }
