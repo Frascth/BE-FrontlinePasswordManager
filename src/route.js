@@ -87,7 +87,7 @@ const prodRoute = [
   {
     method: 'GET',
     path: '/datas',
-    handler: SafeStorageController.getDatas,
+    handler: (request, h) => 'helloo',
   },
 
 ];
