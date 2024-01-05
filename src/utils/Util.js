@@ -64,18 +64,6 @@ class Util {
     };
   }
 
-  // static async getUserPk(request) {
-  //   // if (request.auth == undefined || request.auth == '' || request.auth.credentials == undefined || request.auth.credentials == '') {
-  //   //   return undefined;
-  //   // }
-
-  //   if (!request.isAuthenticated) {
-  //     return undefined;
-  //   }
-
-  //   return request.auth.credentials.id;
-  // }
-
   static getUserIp(request) {
     let ip;
     if (request.headers['x-forwarded-for'].includes(',')) {

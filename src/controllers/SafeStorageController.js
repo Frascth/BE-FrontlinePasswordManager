@@ -5,6 +5,7 @@ import querystring from 'querystring';
 import { sequelizeConn } from '../dbConnection.js';
 import T3SafeStorage from '../models/T3SafeStorage.js';
 import Util from '../utils/Util.js';
+import T3UserDevices from '../models/T3UserDevices.js';
 
 /* eslint-disable prefer-const */
 class SafeStorageController {
@@ -22,7 +23,7 @@ class SafeStorageController {
   static async create(request, h) {
     const { title, website, username, password } = request.payload;
     const transaction = await sequelizeConn.transaction();
-    const userFk = Util.getUserPk(request);
+    const userFk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
 
     try {
       const saltHex = Util.generateHexString();
@@ -159,7 +160,7 @@ class SafeStorageController {
   }
 
   static async getDatas(request, h) {
-    const userFk = Util.getUserPk(request);
+    const userFk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
     // const userFk = 'e0naCzvo7L4KlrlGWYE-z';
 
     const isRedirected = !Util.isEmptyString(request.info.referrer);
