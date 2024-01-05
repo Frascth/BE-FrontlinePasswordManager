@@ -83,7 +83,7 @@ class AuthController {
     }
 
     // check is new device
-    const isNewDevice = await AuthController.isNewDevice(request, userDetail);
+    const isNewDevice = await AuthController.isNewDevice(user.pk, userDetail);
     // await user.save();
 
     if (isNewDevice) {
@@ -122,7 +122,7 @@ class AuthController {
  * @param {object} userDetail
  * @returns boolean
  */
-  static async isNewDevice(request, userDetail) {
+  static async isNewDevice(userPk, userDetail) {
     let {
       ipAddress,
       country,
@@ -130,8 +130,6 @@ class AuthController {
       city,
       userAgent,
     } = userDetail;
-
-    const userPk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
 
     const devices = await T3UserDevices.findOne({
       where: {
@@ -282,7 +280,7 @@ class AuthController {
     const sessionSalt = Util.generateRandomString(30);
     const { hashedText: hashedSessionId } = await Util.hashText(sessionId);
 
-    const isNewDevice = await AuthController.isNewDevice(request, userDetail);
+    const isNewDevice = await AuthController.isNewDevice(user.pk, userDetail);
 
     if (isNewDevice) {
       await transaction.rollback();
