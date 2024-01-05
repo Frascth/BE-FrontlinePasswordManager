@@ -70,6 +70,8 @@ class Util {
     //   return undefined;
     // }
 
+    console.log('HEREEEEEEEEEEEEEEEEEEEEEEEE', request.auth);
+
     if (request.auth == undefined || request.auth == '' || request.auth.credentials == undefined || request.auth.credentials == '') {
       return undefined;
     }
