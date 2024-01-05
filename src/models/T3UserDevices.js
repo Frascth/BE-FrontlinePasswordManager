@@ -1,8 +1,7 @@
 /* eslint-disable prefer-const */
 import { nanoid } from 'nanoid';
-import { DataTypes, Model, where } from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
 import { sequelizeConn } from '../dbConnection.js';
-import Util from '../utils/Util.js';
 
 class T3UserDevices extends Model {
 
