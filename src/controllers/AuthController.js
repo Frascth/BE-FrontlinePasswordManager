@@ -151,7 +151,7 @@ class AuthController {
 
   }
 
-  static async getUserDeviceRecord(request, userDetail) {
+  static async getUserDeviceRecord(userPk, userDetail) {
     let {
       ipAddress,
       country,
@@ -160,11 +160,9 @@ class AuthController {
       userAgent,
     } = userDetail;
 
-    const userPk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
-
     const devicesRecord = await T3UserDevices.findOne({
       where: {
-        userPk,
+        userFk: userPk,
         isDeleted: false,
         verifyKey: USER_DEVICE_STATUS.AUTHENTICATED,
         [Op.or]: [
@@ -288,7 +286,7 @@ class AuthController {
     }
 
     // just find the matches and put session on that record
-    const userDeviceRecord = await AuthController.getUserDeviceRecord(request, userDetail);
+    const userDeviceRecord = await AuthController.getUserDeviceRecord(user.pk, userDetail);
     if (userDeviceRecord) {
       userDeviceRecord.sessionId = hashedSessionId;
       userDeviceRecord.sessionExpires = Util.surplusDate(Util.getDatetime(), 30 * 60).toISOString();
