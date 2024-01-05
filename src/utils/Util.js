@@ -52,7 +52,6 @@ class Util {
     } = await Util.getUserLocation(ipAddress);
 
     return {
-      userFk: Util.getUserPk(request), // only valid when user is authenticated
       ipAddress,
       country,
       state,
@@ -65,28 +64,28 @@ class Util {
     };
   }
 
-  static getUserPk(request) {
-    // if (request.auth.credentials === null) {
-    //   return undefined;
-    // }
+  // static async getUserPk(request) {
+  //   // if (request.auth == undefined || request.auth == '' || request.auth.credentials == undefined || request.auth.credentials == '') {
+  //   //   return undefined;
+  //   // }
 
-    console.log('HEREEEEEEEEEEEEEEEEEEEEEEEE', request.auth);
+  //   if (!request.isAuthenticated) {
+  //     return undefined;
+  //   }
 
-    if (request.auth == undefined || request.auth == '' || request.auth.credentials == undefined || request.auth.credentials == '') {
-      return undefined;
-    }
-
-    return request.auth.credentials.pk;
-  }
+  //   return request.auth.credentials.id;
+  // }
 
   static getUserIp(request) {
-    let ip = request.headers['x-real-ip'] || request.info.remoteAddress;
+    let ip;
+    if (request.headers['x-forwarded-for'].includes(',')) {
+      [ip] = request.headers['x-forwarded-for'].split(',');
+    }
+
+    ip = request.headers['x-real-ip'] || request.info.remoteAddress;
+
     if (!ip) {
-      if (request.headers['x-forwarded-for'].includes(',')) {
-        [ip] = request.headers['x-forwarded-for'].split(',');
-      } else {
-        ip = request.headers['x-forwarded-for'];
-      }
+      ip = request.headers['x-forwarded-for'];
     }
     return ip;
   }
