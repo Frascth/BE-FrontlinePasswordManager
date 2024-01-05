@@ -187,8 +187,10 @@ class AuthController {
    * @returns
    */
   static async validateCookie(request, session) {
+    console.log('SESSION ID', session.id);
+    console.log('SESSION SALT', session.salt);
     const userDevices = await T3UserDevices.findOne({ where: {
-      sessionSalt: session.sessionSalt, // session salt is not hashed on db so its usage is for query the right hashed session id
+      sessionSalt: session.salt, // session salt is not hashed on db so its usage is for query the right hashed session id
       isDeleted: false,
       sessionExpires: {
         [Op.gt]: Util.getDatetime(),
@@ -201,7 +203,6 @@ class AuthController {
     }
 
     const valid = await Util.compareHash(session.id, userDevices.sessionId);
-    console.log('AUTH COOKIEEE is ', valid);
     if (!valid) {
       return { isValid: false, credentials: null };
     }
@@ -296,7 +297,7 @@ class AuthController {
     }
 
     // cookie defining
-    request.cookieAuth.set({ id: sessionId, sessionSalt });
+    request.cookieAuth.set({ id: sessionId, salt: sessionSalt });
 
     // set job for logout delete session db after 30 minutes
     resetSession(user.pk, sessionSalt);
