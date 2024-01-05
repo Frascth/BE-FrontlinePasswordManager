@@ -160,6 +160,7 @@ class SafeStorageController {
   }
 
   static async getDatas(request, h) {
+    return 'resssssssssssssssssssssss';
     const userFk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
     console.log('HEEEEEEEREEEEEEEEEEEE', userFk);
     // const userFk = 'e0naCzvo7L4KlrlGWYE-z';
