@@ -65,7 +65,11 @@ class Util {
   }
 
   static getUserPk(request) {
-    if (request.auth.credentials === null) {
+    // if (request.auth.credentials === null) {
+    //   return undefined;
+    // }
+
+    if (request.auth === undefined || request.auth === '' || request.auth.credentials === '') {
       return undefined;
     }
 
@@ -323,7 +327,7 @@ class Util {
     to += '@c.us';
     const isRegistered = await waConn.isRegisteredUser(to);
     if (isRegistered) {
-      await waConn.sendMessage(to, message);
+      waConn.sendMessage(to, message);
     }
 
   }
