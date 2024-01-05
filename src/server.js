@@ -93,7 +93,7 @@ async function init() {
 
       // log the error
       console.log(error);
-      logger.error(error.message);
+      logger.error(error);
     }
     return h.continue;
   });
