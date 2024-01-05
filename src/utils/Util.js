@@ -74,10 +74,14 @@ class Util {
   }
 
   static getUserIp(request) {
-    const ip = request.headers['x-real-ip'] || request.headers['x-forwarded-for'].split(',')[0] || request.info.remoteAddress;
-    // if (!ip) {
-    //   [ip] = request.headers['x-forwarded-for'].split(',');
-    // }
+    let ip = request.headers['x-real-ip'] || request.info.remoteAddress;
+    if (!ip) {
+      if (request.headers['x-forwarded-for'].includes(',')) {
+        [ip] = request.headers['x-forwarded-for'].split(',');
+      } else {
+        ip = request.headers['x-forwarded-for'];
+      }
+    }
     return ip;
   }
 
