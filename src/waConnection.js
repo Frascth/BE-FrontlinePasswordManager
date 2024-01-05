@@ -1,7 +1,7 @@
 // import { Client, LocalAuth } from 'whatsapp-web.js';
 import qr from 'qrcode-terminal';
 import Whatsapp from 'whatsapp-web.js';
-import { ADMIN_WA_NO } from './utils/constant.js';
+import { ADMIN_WA_NO, ENVIRONMENT, SERVER } from './utils/constant.js';
 import logger from './logger.js';
 
 const { Client, LocalAuth } = Whatsapp;
@@ -28,7 +28,7 @@ waConn.on('ready', async () => {
   }
   console.log('WhatsApp connection is ready!');
   logger.info('WhatsApp connection is ready!');
-  await waConn.sendMessage(to, 'WhatsApp connection for Frontline is ready!');
+  waConn.sendMessage(to, `${SERVER.HOST}: WhatsApp connection for Frontline is ready!`);
 });
 
 export default waConn;
