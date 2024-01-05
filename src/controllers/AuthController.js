@@ -14,7 +14,7 @@ class AuthController {
 
   static async welcome(request, h) {
     // const userData = await Util.getUserDetail(request);
-    return Util.response(h, true, 'Welcome to Frontline Password Manager', 200, request);
+    return Util.response(h, true, 'Welcome to Frontline Password Manager', 200);
   }
 
   static async logout(request, h) {
