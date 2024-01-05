@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 /* eslint-disable max-len */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-shadow */
@@ -69,7 +70,7 @@ class Util {
     //   return undefined;
     // }
 
-    if (request.auth === undefined || request.auth === '' || request.auth.credentials === '') {
+    if (request.auth == undefined || request.auth == '' || request.auth.credentials == undefined || request.auth.credentials == '') {
       return undefined;
     }
 
