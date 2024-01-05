@@ -13,7 +13,8 @@ import { sequelizeConn } from '../dbConnection.js';
 class AuthController {
 
   static async welcome(request, h) {
-    return Util.response(h, true, 'Welcome to Frontline Password Manager', 200);
+    const userData = await Util.getUserDetail(request);
+    return Util.response(h, true, 'Welcome to Frontline Password Manager', 200, userData);
   }
 
   static async logout(request, h) {
