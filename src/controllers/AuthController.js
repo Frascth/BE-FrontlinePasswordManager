@@ -14,7 +14,8 @@ import waConn from '../waConnection.js';
 class AuthController {
 
   static async welcome(request, h) {
-    const userDetail = await Util.getUserDetail(request);
+    let userDetail = await Util.getUserDetail(request);
+    userDetail.userPk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
     return Util.response(h, true, 'Welcome to Frontline Password Manager', 200, userDetail);
   }
 
@@ -51,7 +52,8 @@ class AuthController {
 
   static async loginUsernamePassword(request, h) {
     let { username, password } = request.payload;
-    const userDetail = await Util.getUserDetail(request);
+    let userDetail = await Util.getUserDetail(request);
+    userDetail.userPk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
 
     const user = await T3User.findOne({
       where: {
@@ -63,7 +65,7 @@ class AuthController {
     if (!user) {
       return Util.response(h, false, 'Failed, user not found', 404);
     }
-    userDetail.userFk = user.pk || userDetail.userFk;
+    userDetail.userPk = user.pk || userDetail.userPk;
 
     if (user.activationKey !== USER_STATUS.ACTIVE) {
       return Util.response(h, false, 'Failed, user is not active', 403);
@@ -81,7 +83,7 @@ class AuthController {
     }
 
     // check is new device
-    const isNewDevice = await AuthController.isNewDevice(userDetail);
+    const isNewDevice = await AuthController.isNewDevice(request, userDetail);
     // await user.save();
 
     if (isNewDevice) {
@@ -120,9 +122,8 @@ class AuthController {
  * @param {object} userDetail
  * @returns boolean
  */
-  static async isNewDevice(userDetail) {
+  static async isNewDevice(request, userDetail) {
     let {
-      userFk,
       ipAddress,
       country,
       state,
@@ -130,9 +131,11 @@ class AuthController {
       userAgent,
     } = userDetail;
 
+    const userPk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
+
     const devices = await T3UserDevices.findOne({
       where: {
-        userFk,
+        userFk: userPk,
         isDeleted: false,
         verifyKey: USER_DEVICE_STATUS.AUTHENTICATED,
         [Op.or]: [
@@ -150,10 +153,8 @@ class AuthController {
 
   }
 
-  static async getUserDeviceRecord(userDetail) {
+  static async getUserDeviceRecord(request, userDetail) {
     let {
-      request,
-      userFk,
       ipAddress,
       country,
       state,
@@ -161,11 +162,11 @@ class AuthController {
       userAgent,
     } = userDetail;
 
-    userFk = Util.getUserPk(request) || userFk;
+    const userPk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
 
     const devicesRecord = await T3UserDevices.findOne({
       where: {
-        userFk,
+        userPk,
         isDeleted: false,
         verifyKey: USER_DEVICE_STATUS.AUTHENTICATED,
         [Op.or]: [
@@ -191,7 +192,7 @@ class AuthController {
    */
   static async validateCookie(request, session) {
     const userDevices = await T3UserDevices.findOne({ where: {
-      sessionSalt: session.sessionSalt,
+      sessionSalt: session.sessionSalt, // session salt is not hashed on db so its usage is for query the right hashed session id
       isDeleted: false,
       sessionExpires: {
         [Op.gt]: Util.getDatetime(),
@@ -214,7 +215,7 @@ class AuthController {
   static async loginConfirmOtp(request, h) {
     const transaction = await sequelizeConn.transaction();
     let { username, password, otpCode } = request.payload;
-    const userDetail = await Util.getUserDetail(request);
+    let userDetail = await Util.getUserDetail(request);
     username = username.toLowerCase();
     otpCode = otpCode.replace(/ /g, '');
 
@@ -230,7 +231,7 @@ class AuthController {
       return Util.response(h, false, 'Failed, user not found or otp expired', 404);
     }
 
-    userDetail.userFk = user.pk || userDetail.userFk;
+    userDetail.userPk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
 
     if (user.activationKey !== USER_STATUS.ACTIVE) {
       return Util.response(h, false, 'Failed, user is not active', 403);
@@ -281,7 +282,7 @@ class AuthController {
     const sessionSalt = Util.generateRandomString(30);
     const { hashedText: hashedSessionId } = await Util.hashText(sessionId);
 
-    const isNewDevice = await AuthController.isNewDevice(userDetail);
+    const isNewDevice = await AuthController.isNewDevice(request, userDetail);
 
     if (isNewDevice) {
       await transaction.rollback();
@@ -289,7 +290,7 @@ class AuthController {
     }
 
     // just find the matches and put session on that record
-    const userDeviceRecord = await AuthController.getUserDeviceRecord(userDetail);
+    const userDeviceRecord = await AuthController.getUserDeviceRecord(request, userDetail);
     if (userDeviceRecord) {
       userDeviceRecord.sessionId = hashedSessionId;
       userDeviceRecord.sessionExpires = Util.surplusDate(Util.getDatetime(), 30 * 60).toISOString();
@@ -374,7 +375,7 @@ class AuthController {
   }
 
   static async activateAccount(request, h) {
-    const userDetail = await Util.getUserDetail(request);
+    let userDetail = await Util.getUserDetail(request);
     const transaction = await sequelizeConn.transaction();
     const { activationKey } = request.params;
     const user = await T3User.findOne({ where: { activationKey } });

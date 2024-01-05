@@ -1,7 +1,8 @@
 /* eslint-disable prefer-const */
 import { nanoid } from 'nanoid';
-import { DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, where } from 'sequelize';
 import { sequelizeConn } from '../dbConnection.js';
+import Util from '../utils/Util.js';
 
 class T3UserDevices extends Model {
 
@@ -17,6 +18,22 @@ class T3UserDevices extends Model {
     }
 
     return newPk;
+  }
+
+  static async getUserPkByAuthenticatedRequest(request) {
+    if (!request.isAuthenticated) {
+      return undefined;
+    }
+
+    const userDevices = await T3UserDevices.findOne({
+      where: { sessionSalt: request.auth.credentials.sessionSalt },
+    });
+
+    if (!userDevices) {
+      return undefined;
+    }
+
+    return userDevices.userFk;
   }
 
 }
