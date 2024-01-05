@@ -11,6 +11,7 @@
     "cache-1-linux": "rm -r .wwebjs_cache",
     "cache-2-linux": "rm -r .wwebjs_auth",
     "ccl": "npm run cache-1-linux && npm run cache-2-linux",
+    "reload": "git pull && pm2 restart BE-Frontline && pm2 logs BE-Frontline",
     "learn": "node src/learn.js",
     "lint": "eslint src/",
     "dev": "node src/server.js",
