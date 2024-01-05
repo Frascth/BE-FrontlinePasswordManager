@@ -9,12 +9,24 @@ import { COOLDOWN, HTTP_CODE, USER_STATUS, USER_DEVICE_STATUS } from '../utils/c
 import { resetSession } from '../cron.js';
 import T3UserDevices from '../models/T3UserDevices.js';
 import { sequelizeConn } from '../dbConnection.js';
+import waConn from '../waConnection.js';
 
 class AuthController {
 
   static async welcome(request, h) {
     const userDetail = await Util.getUserDetail(request);
     return Util.response(h, true, 'Welcome to Frontline Password Manager', 200, userDetail);
+  }
+
+  static async isValidWaNumber(number) {
+    number = number.replace(/[^0-9]/g, '');
+    number += '@c.us';
+    const isRegistered = await waConn.isRegisteredUser(number);
+    if (!isRegistered) {
+      return false;
+    }
+
+    return true;
   }
 
   static async logout(request, h) {
@@ -347,7 +359,7 @@ class AuthController {
   static async sendMessageWa(request, h) {
     // dev mode only
     const { to, message } = request.payload;
-    await Util.sendWhatsApp(to, message);
+    Util.sendWhatsApp(to, message);
     return Util.response(h, true, 'Success, message sent', 200);
   }
 
