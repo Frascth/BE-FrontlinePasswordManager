@@ -51,7 +51,6 @@ class Util {
     } = await Util.getUserLocation(ipAddress);
 
     return {
-      request,
       userFk: Util.getUserPk(request), // only valid when user is authenticated
       ipAddress,
       country,
@@ -120,7 +119,7 @@ class Util {
         TP_API.GEOAPIFY_REACH_LIMIT = true;
         console.log('GEOAPIFY api reach limit daily usage');
         // call cron to schedule 24 hour in the future set reach limit to false
-        resetApiLimit('GEOAPIFY_REACH_LIMIT');
+        Util.resetApiLimit('GEOAPIFY_REACH_LIMIT');
         return undefined;
       }
 
@@ -153,7 +152,7 @@ class Util {
         TP_API.IPINFO_REACH_LIMIT = true;
         console.log('IPINFO api reach limit monthly usage');
         // call cron to schedule 30 days in the future set reach limit to false
-        resetApiLimit('IPINFO_REACH_LIMIT');
+        Util.resetApiLimit('IPINFO_REACH_LIMIT');
         return undefined;
       }
 
@@ -457,7 +456,6 @@ class Util {
       message: message.message || message,
       data,
     });
-    response.code(code);
 
     if (ENVIRONMENT === 'development') {
       response = h.response({
@@ -465,9 +463,10 @@ class Util {
         message,
         data,
       });
-      response.code(code);
 
     }
+
+    response.code(code);
 
     return response;
   }
