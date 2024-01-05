@@ -1,6 +1,6 @@
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
-import { SERVER } from './utils/constant.js';
+import { ENVIRONMENT, SERVER } from './utils/constant.js';
 
 const transport = new DailyRotateFile({
   filename: `${SERVER.LOG_PATH}/%DATE%.log`,
@@ -12,7 +12,7 @@ const transport = new DailyRotateFile({
 
 // Define the logger configuration
 const logger = winston.createLogger({
-  level: 'info', // Log only messages with level 'info' and above
+  level: ENVIRONMENT === 'development' ? 'info' : 'error', // Log only messages with level 'info' and above for dev
   format: winston.format.combine(
     winston.format.timestamp(), // Add a timestamp to each log entry
     winston.format.json(), // Log entries in JSON format
