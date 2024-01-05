@@ -1,7 +1,7 @@
 // import { Client, LocalAuth } from 'whatsapp-web.js';
 import qr from 'qrcode-terminal';
 import Whatsapp from 'whatsapp-web.js';
-import { ADMIN_WA_NO, ENVIRONMENT, SERVER } from './utils/constant.js';
+import { ADMIN_WA_NO, SERVER } from './utils/constant.js';
 import logger from './logger.js';
 
 const { Client, LocalAuth } = Whatsapp;
