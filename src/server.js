@@ -57,7 +57,8 @@ async function init() {
       clearInvalid: true,
       name: SERVER.COOKIE_NAME,
       password: SERVER.COOKIE_PASSWORD,
-      isSecure: ENVIRONMENT === 'production', // if production then true
+      isSecure: false, // if production then true
+      // isSecure: ENVIRONMENT === 'production', // if production then true
       ttl: ENVIRONMENT === 'development' ? 12 * 3600 * 1000 : 30 * 60 * 1000,
       isHttpOnly: true, // handle xss
       // domain: ENVIRONMENT === 'development' ? SERVER.HOST : SERVER.COOKIE_DOMAIN,
