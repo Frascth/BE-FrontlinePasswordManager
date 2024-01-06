@@ -5,7 +5,6 @@ import querystring from 'querystring';
 import { sequelizeConn } from '../dbConnection.js';
 import T3SafeStorage from '../models/T3SafeStorage.js';
 import Util from '../utils/Util.js';
-import T3UserDevices from '../models/T3UserDevices.js';
 
 /* eslint-disable prefer-const */
 class SafeStorageController {

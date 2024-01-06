@@ -60,6 +60,7 @@ async function init() {
       isSecure: ENVIRONMENT === 'production', // if production then true
       ttl: ENVIRONMENT === 'development' ? 12 * 3600 * 1000 : 30 * 60 * 1000,
       isHttpOnly: true, // handle xss
+      // domain: ENVIRONMENT === 'development' ? SERVER.HOST : SERVER.COOKIE_DOMAIN,
     },
     redirectTo: '/login-username-password',
     validate: AuthController.validateCookie,

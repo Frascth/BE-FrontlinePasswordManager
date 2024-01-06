@@ -14,6 +14,7 @@ import waConn from '../waConnection.js';
 class AuthController {
 
   static async welcome(request, h) {
+    console.log('AUTH REQUEST OBJECT', request);
     let userDetail = await Util.getUserDetail(request);
     userDetail.userPk = Util.getUserPkByAuthenticatedRequest(request);
     return Util.response(h, true, 'Welcome to Frontline Password Manager', 200, userDetail);
