@@ -23,7 +23,6 @@ class SafeStorageController {
     const { title, website, username, password } = request.payload;
     const transaction = await sequelizeConn.transaction();
     const userFk = Util.getUserPkByAuthenticatedRequest(request);
-    console.log('SAFE STORAGE HEEEEEEEEEEEEEERE userfk create', userFk);
 
     try {
       const saltHex = Util.generateHexString();
@@ -160,10 +159,7 @@ class SafeStorageController {
   }
 
   static async getDatas(request, h) {
-    // const userFk = 'z_MQq-HlkRoOSLFh6tlNm';
-    console.log('SAFE STORAGE', 'REQUEST OBJECT IS', request);
     const userFk = Util.getUserPkByAuthenticatedRequest(request);
-    console.log('SAFE STORAGE', 'HEEEEEEEREEEEEEEEEEEE', userFk);
 
     const isRedirected = !Util.isEmptyString(request.info.referrer);
     let datas = {

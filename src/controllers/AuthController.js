@@ -14,7 +14,6 @@ import waConn from '../waConnection.js';
 class AuthController {
 
   static async welcome(request, h) {
-    console.log('AUTH REQUEST OBJECT', request);
     let userDetail = await Util.getUserDetail(request);
     userDetail.userPk = Util.getUserPkByAuthenticatedRequest(request);
     return Util.response(h, true, 'Welcome to Frontline Password Manager', 200, userDetail);
@@ -188,8 +187,6 @@ class AuthController {
    * @returns
    */
   static async validateCookie(request, session) {
-    console.log('AUTH', 'SESSION ID', session.id);
-    console.log('AUTH', 'SESSION SALT', session.salt);
     const userDevices = await T3UserDevices.findOne({ where: {
       sessionSalt: session.salt, // session salt is not hashed on db so its usage is for query the right hashed session id
       isDeleted: false,

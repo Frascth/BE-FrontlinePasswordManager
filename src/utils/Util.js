@@ -133,6 +133,7 @@ class Util {
       }
 
       if (response.status !== 200) {
+        logger.error(data.message);
         console.log(data.message);
         return undefined;
       }
@@ -166,6 +167,7 @@ class Util {
       }
 
       if (response.status !== 200) {
+        logger.error(data.message);
         console.log(data.message);
         return undefined;
       }
