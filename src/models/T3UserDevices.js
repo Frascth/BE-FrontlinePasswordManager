@@ -19,22 +19,6 @@ class T3UserDevices extends Model {
     return newPk;
   }
 
-  static async getUserPkByAuthenticatedRequest(request) {
-    if (!request.isAuthenticated) {
-      return undefined;
-    }
-
-    const userDevices = await T3UserDevices.findOne({
-      where: { sessionSalt: request.auth.credentials.sessionSalt },
-    });
-
-    if (!userDevices) {
-      return undefined;
-    }
-
-    return userDevices.userFk;
-  }
-
 }
 
 T3UserDevices.init({

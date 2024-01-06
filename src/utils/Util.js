@@ -66,7 +66,7 @@ class Util {
 
   static getUserIp(request) {
     let ip;
-    if (request.headers['x-forwarded-for'].includes(',')) {
+    if (request.headers['x-forwarded-for'] && request.headers['x-forwarded-for'].includes(',')) {
       [ip] = request.headers['x-forwarded-for'].split(',');
     }
 
@@ -76,6 +76,21 @@ class Util {
       ip = request.headers['x-forwarded-for'];
     }
     return ip;
+  }
+
+  /**
+   * user pk is defined when server calling AuthController.validateCookie function
+   * @param {*} request
+   * @returns userPk
+   */
+  static getUserPkByAuthenticatedRequest(request) {
+    // credentials.pk is defined when calling a validateCookie function
+    if (!request.auth.isAuthenticated) {
+      return undefined;
+    }
+
+    return request.auth.credentials.pk;
+
   }
 
   static getRawUserAgent(request) {

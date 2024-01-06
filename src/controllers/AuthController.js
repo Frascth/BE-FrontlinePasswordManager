@@ -15,7 +15,7 @@ class AuthController {
 
   static async welcome(request, h) {
     let userDetail = await Util.getUserDetail(request);
-    userDetail.userPk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
+    userDetail.userPk = Util.getUserPkByAuthenticatedRequest(request);
     return Util.response(h, true, 'Welcome to Frontline Password Manager', 200, userDetail);
   }
 
@@ -53,7 +53,7 @@ class AuthController {
   static async loginUsernamePassword(request, h) {
     let { username, password } = request.payload;
     let userDetail = await Util.getUserDetail(request);
-    userDetail.userPk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
+    userDetail.userPk = Util.getUserPkByAuthenticatedRequest(request);
 
     const user = await T3User.findOne({
       where: {
@@ -187,8 +187,8 @@ class AuthController {
    * @returns
    */
   static async validateCookie(request, session) {
-    console.log('SESSION ID', session.id);
-    console.log('SESSION SALT', session.salt);
+    console.log('AUTH', 'SESSION ID', session.id);
+    console.log('AUTH', 'SESSION SALT', session.salt);
     const userDevices = await T3UserDevices.findOne({ where: {
       sessionSalt: session.salt, // session salt is not hashed on db so its usage is for query the right hashed session id
       isDeleted: false,
@@ -229,7 +229,7 @@ class AuthController {
       return Util.response(h, false, 'Failed, user not found or otp expired', 404);
     }
 
-    userDetail.userPk = await T3UserDevices.getUserPkByAuthenticatedRequest(request);
+    userDetail.userPk = Util.getUserPkByAuthenticatedRequest(request);
 
     if (user.activationKey !== USER_STATUS.ACTIVE) {
       return Util.response(h, false, 'Failed, user is not active', 403);

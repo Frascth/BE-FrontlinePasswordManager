@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import hapi from '@hapi/hapi';
 import hapiAuthCookie from '@hapi/cookie';
-import { SERVER, ENVIRONMENT, FE_SERVER } from './utils/constant.js';
+import { SERVER, ENVIRONMENT } from './utils/constant.js';
 import route from './route.js';
 import { initDatabase } from './dbConnection.js';
 import { applyModelsAssociation, defineAllModel, syncModelWithDb } from './modelSync.js';
