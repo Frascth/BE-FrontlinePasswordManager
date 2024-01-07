@@ -67,7 +67,7 @@ class Util {
   static getUserIp(request) {
     let ip;
     if (request.headers['x-forwarded-for'] && request.headers['x-forwarded-for'].includes(',')) {
-      [ip] = request.headers['x-forwarded-for'].split(',');
+      [ip] = request.headers['x-forwarded-for'].replace('/ /g', '').split(',');
     }
 
     ip = request.headers['x-real-ip'] || request.info.remoteAddress;
