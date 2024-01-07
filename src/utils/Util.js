@@ -70,7 +70,9 @@ class Util {
       [ip] = request.headers['x-forwarded-for'].replace('/ /g', '').split(',');
     }
 
-    ip = request.headers['x-real-ip'] || request.info.remoteAddress;
+    if (!ip) {
+      ip = request.headers['x-real-ip'] || request.info.remoteAddress;
+    }
 
     if (!ip) {
       ip = request.headers['x-forwarded-for'];
