@@ -14,11 +14,7 @@ import waConn from '../waConnection.js';
 class AuthController {
 
   static async welcome(request, h) {
-    let userDetail = await Util.getUserDetail(request);
-    userDetail.userPk = Util.getUserPkByAuthenticatedRequest(request);
-    userDetail.realIp = request.headers['x-real-ip'];
-    userDetail.xForwardedFor = request.headers['x-forwarded-for'];
-    return Util.response(h, true, 'Welcome to Frontline Password Manager', 200, userDetail);
+    return Util.response(h, true, 'Welcome to Frontline Password Manager', 200);
   }
 
   static async isValidWaNumber(number) {
